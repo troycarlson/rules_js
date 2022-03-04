@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"fmt"
 	"io"
 	"log"
@@ -20,6 +21,36 @@ import (
 
 	"github.com/evanw/esbuild/pkg/api"
 )
+// Scanner reads a file into a string.
+type Scanner struct {
+}
+
+// Scan reads a file named name in directory dir into a string.
+// The contents of the file are stored in fileInfo.Content.
+func (s *Scanner) Scan(dir string, name string) *FileInfo {
+	fpath := filepath.Join(dir, name)
+	filename := name
+	content, err := ioutil.ReadFile(fpath)
+	if err != nil {
+		log.Printf("%s: error reading ts file: %v", fpath, err)
+		return nil
+	}
+	return &FileInfo{
+		Path:     fpath,
+		Filename: filename,
+		Content:  string(content),
+	}
+}
+
+func NewScanner() *Scanner {
+	return &Scanner{}
+}
+
+type FileInfo struct {
+	Path     string
+	Filename string
+	Content  string
+}
 
 type Parser struct {
 }
@@ -110,7 +141,7 @@ func init() {
 	parseScriptRunfile, err := bazel.Runfile("gazelle/parse")
 	if err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
+		// os.Exit(1)
 	}
 
 	ctx := context.Background()

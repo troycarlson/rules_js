@@ -31,6 +31,7 @@ go_rules_dependencies()
 
 go_register_toolchains(version = "1.17.2")
 
+# gazelle:repository_macro gazelle/deps.bzl%gazelle_deps
 gazelle_dependencies()
 
 ############################################

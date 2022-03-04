@@ -8,8 +8,5 @@ go_library(
     ],
     importpath = "aspect.build/rules_js/gazelle/tsconfig",
     visibility = ["//visibility:public"],
-    deps = [
-        "@bazel_gazelle//label:go_default_library",
-        "@com_github_emirpasic_gods//lists/singlylinkedlist",
-    ],
+    deps = ["@com_github_emirpasic_gods//lists/singlylinkedlist"],
 )

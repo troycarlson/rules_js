@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/evanw/esbuild v0.14.25 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac // indirect

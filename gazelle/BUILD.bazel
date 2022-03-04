@@ -30,6 +30,7 @@ go_library(
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_emirpasic_gods//utils",
+        "@com_github_evanw_esbuild//pkg/api:go_default_library",
         "@com_github_google_uuid//:uuid",
         "@io_bazel_rules_go//go/tools/bazel:go_default_library",
     ],
@@ -49,12 +50,16 @@ py_binary(
 
 go_test(
     name = "gazelle_test",
-    srcs = ["js_test.go"],
+    srcs = [
+        "js_test.go",
+        "parser_test.go",
+    ],
     data = [
         ":gazelle_js_binary",
         ":parse",
         ":std_modules",
     ] + glob(["testdata/**"]),
+    embed = [":gazelle"],
     deps = [
         "@bazel_gazelle//testtools:go_default_library",
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
@@ -70,14 +75,30 @@ gazelle_binary(
 )
 
 bzl_library(
-    name = "def",
-    srcs = ["def.bzl"],
-    visibility = ["//visibility:public"],
-)
-
-bzl_library(
     name = "deps",
     srcs = ["deps.bzl"],
     visibility = ["//visibility:public"],
     deps = ["@bazel_gazelle//:deps"],
+)
+
+go_test(
+    name = "lib_test",
+    srcs = [
+        "js_test.go",
+        "parser_test.go",
+    ],
+    data = glob(["testdata/**"]),
+    embed = [":gazelle"],
+    deps = [
+        "@bazel_gazelle//testtools:go_default_library",
+        "@com_github_emirpasic_gods//lists/singlylinkedlist",
+        "@com_github_ghodss_yaml//:yaml",
+        "@io_bazel_rules_go//go/tools/bazel:go_default_library",
+    ],
+)
+
+bzl_library(
+    name = "def",
+    srcs = ["def.bzl"],
+    visibility = ["//visibility:public"],
 )

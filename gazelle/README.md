@@ -36,8 +36,6 @@ Then put this in your `BUILD.bazel` file next to the `requirements.txt`:
 
 ```starlark
 load("@pip//:requirements.bzl", "all_whl_requirements")
-load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
-load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
 
 # This rule fetches the metadata for python packages we depend on. That data is
 # required for the gazelle_python_manifest rule to update our manifest file.

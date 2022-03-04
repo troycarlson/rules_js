@@ -1,7 +1,6 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_gazelle//:def.bzl", "gazelle_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
-load("@rules_python//python:defs.bzl", "py_binary")
 
 go_library(
     name = "gazelle",
@@ -19,8 +18,7 @@ go_library(
     importpath = "aspect.build/rules_js/gazelle",
     visibility = ["//visibility:public"],
     deps = [
-        "//gazelle/manifest",
-        "//gazelle/pythonconfig",
+        "//gazelle/tsconfig",
         "@bazel_gazelle//config:go_default_library",
         "@bazel_gazelle//label:go_default_library",
         "@bazel_gazelle//language:go_default_library",
@@ -51,9 +49,9 @@ py_binary(
 
 go_test(
     name = "gazelle_test",
-    srcs = ["python_test.go"],
+    srcs = ["js_test.go"],
     data = [
-        ":gazelle_python_binary",
+        ":gazelle_js_binary",
         ":parse",
         ":std_modules",
     ] + glob(["testdata/**"]),
@@ -66,7 +64,7 @@ go_test(
 )
 
 gazelle_binary(
-    name = "gazelle_python_binary",
+    name = "gazelle_js_binary",
     languages = ["//gazelle"],
     visibility = ["//visibility:public"],
 )

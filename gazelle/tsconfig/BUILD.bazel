@@ -6,10 +6,9 @@ go_library(
         "tsconfig.go",
         "types.go",
     ],
-    importpath = "aspect.build/rules_js/gazelle/tscondif",
+    importpath = "aspect.build/rules_js/gazelle/tsconfig",
     visibility = ["//visibility:public"],
     deps = [
-        "//gazelle/manifest",
         "@bazel_gazelle//label:go_default_library",
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
     ],

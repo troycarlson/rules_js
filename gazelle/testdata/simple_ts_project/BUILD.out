@@ -1,0 +1,8 @@
+load("@npm//@bazel/typescript", "ts_project")
+
+ts_project(
+    name = "simple_ts_project",
+    srcs = [
+        "main.ts"
+    ],
+)

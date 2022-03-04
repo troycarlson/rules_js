@@ -1,8 +1,7 @@
-load("@npm//@bazel/typescript", "ts_project")
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
 
 ts_project(
     name = "simple_ts_project",
-    srcs = [
-        "main.ts"
-    ],
+    srcs = ["main.ts"],
+    visibility = ["//:__subpackages__"],
 )

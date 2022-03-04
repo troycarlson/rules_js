@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "tsconfig",
+    srcs = [
+        "tsconfig.go",
+        "types.go",
+    ],
+    importpath = "aspect.build/rules_js/gazelle/tscondif",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//gazelle/manifest",
+        "@bazel_gazelle//label:go_default_library",
+        "@com_github_emirpasic_gods//lists/singlylinkedlist",
+    ],
+)

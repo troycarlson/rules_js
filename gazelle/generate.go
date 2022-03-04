@@ -150,7 +150,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 	}
 
-	parser := newPython3Parser(args.Config.RepoRoot, args.Rel, cfg.IgnoresDependency)
 	visibility := fmt.Sprintf("//%s:__subpackages__", tsProjectRoot)
 
 	var result language.GenerateResult
@@ -160,10 +159,8 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 
 	var tsProject *rule.Rule
 	if !tsProjectFilenames.Empty() {
-		deps, err := parser.parse(tsProjectFilenames)
-		if err != nil {
-			log.Fatalf("ERROR: %v\n", err)
-		}
+		// TODO
+		deps := treeset.NewWith(godsutils.StringComparator)
 
 		tsProjectTargetName := cfg.RenderLibraryName(packageName)
 

@@ -1,0 +1,10 @@
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
+
+ts_project(
+    name = "simple_import_ts_project",
+    srcs = [
+        "lib.ts",
+        "main.ts",
+    ],
+    visibility = ["//:__subpackages__"],
+)

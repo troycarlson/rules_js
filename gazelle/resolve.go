@@ -36,7 +36,7 @@ const (
 type Resolver struct{}
 
 // Name returns the name of the language. This is the prefix of the kinds of
-// rules generated. E.g. py_library and py_binary.
+// rules generated. E.g. ts_project
 func (*Resolver) Name() string { return languageName }
 
 // Imports returns a list of ImportSpecs that can be used to import the rule
@@ -177,13 +177,13 @@ func (py *Resolver) Resolve(
 					matches := ix.FindRulesByImportWithConfig(c, imp, languageName)
 					if len(matches) == 0 {
 						// Check if the imported module is part of the standard library.
-						if isStd, err := isStdModule(mod); err != nil {
-							log.Println("ERROR: ", err)
-							hasFatalError = true
-							continue MODULE_LOOP
-						} else if isStd {
-							continue MODULE_LOOP
-						}
+						// if isStd, err := isStdModule(mod); err != nil {
+						// 	log.Println("ERROR: ", err)
+						// 	hasFatalError = true
+						// 	continue MODULE_LOOP
+						// } else if isStd {
+						// 	continue MODULE_LOOP
+						// }
 						if cfg.ValidateImportStatements() {
 							err := fmt.Errorf(
 								"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+

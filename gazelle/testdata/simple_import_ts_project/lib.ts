@@ -1,0 +1,1 @@
+export const STR = "impo   rt me";

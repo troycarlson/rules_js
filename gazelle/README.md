@@ -65,26 +65,6 @@ gazelle_python_manifest(
 )
 ```
 
-Finally, you create a target that you'll invoke to run the Gazelle tool
-with the rules_python extension included. This typically goes in your root
-`/BUILD.bazel` file:
-
-```
-load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
-
-# Our gazelle target points to the python gazelle binary.
-# This is the simple case where we only need one language supported.
-# If you also had proto, go, or other gazelle-supported languages,
-# you would also need a gazelle_binary rule.
-# See https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.rst#example
-gazelle(
-    name = "gazelle",
-    data = GAZELLE_PYTHON_RUNTIME_DEPS,
-    gazelle = "@rules_python//gazelle:gazelle_python_binary",
-)
-```
-
 That's it, now you can finally run `bazel run //:gazelle` anytime
 you edit Python code, and it should update your `BUILD` files correctly.
 

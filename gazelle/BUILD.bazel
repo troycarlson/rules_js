@@ -12,7 +12,6 @@ go_library(
         "language.go",
         "parser.go",
         "resolve.go",
-        "std_modules.go",
         "target.go",
     ],
     importpath = "aspect.build/rules_js/gazelle",
@@ -36,18 +35,6 @@ go_library(
     ],
 )
 
-py_binary(
-    name = "parse",
-    srcs = ["parse.py"],
-    visibility = ["//visibility:public"],
-)
-
-py_binary(
-    name = "std_modules",
-    srcs = ["std_modules.py"],
-    visibility = ["//visibility:public"],
-)
-
 go_test(
     name = "gazelle_test",
     srcs = [
@@ -56,8 +43,6 @@ go_test(
     ],
     data = [
         ":gazelle_js_binary",
-        ":parse",
-        ":std_modules",
     ] + glob(["testdata/**"]),
     embed = [":gazelle"],
     deps = [
@@ -79,10 +64,4 @@ bzl_library(
     srcs = ["deps.bzl"],
     visibility = ["//visibility:public"],
     deps = ["@bazel_gazelle//:deps"],
-)
-
-bzl_library(
-    name = "def",
-    srcs = ["def.bzl"],
-    visibility = ["//visibility:public"],
 )

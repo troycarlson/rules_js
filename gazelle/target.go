@@ -58,7 +58,7 @@ func (t *targetBuilder) addSrcs(srcs *treeset.Set) *targetBuilder {
 func (t *targetBuilder) addModuleDependencies(deps *treeset.Set) *targetBuilder {
 	it := deps.Iterator()
 	for it.Next() {
-		t.deps.Add(it.Value().(module))
+		//TODO t.deps.Add(it.Value().(module))
 	}
 	return t
 }
@@ -92,4 +92,21 @@ func (t *targetBuilder) build() *rule.Rule {
 	}
 	r.SetPrivateAttr(resolvedDepsKey, t.resolvedDeps)
 	return r
+}
+
+// module represents a fully-qualified, dot-separated, Python module as seen on
+// the import statement, alongside the line number where it happened.
+type module struct {
+	// The fully-qualified, dot-separated, Python module name as seen on import
+	// statements.
+	Name string `json:"name"`
+	// The line number where the import happened.
+	LineNumber uint32 `json:"lineno"`
+	// The path to the module file relative to the Bazel workspace root.
+	Filepath string `json:"filepath"`
+}
+
+// moduleComparator compares modules by name.
+func moduleComparator(a, b interface{}) int {
+	return godsutils.StringComparator(a.(module).Name, b.(module).Name)
 }

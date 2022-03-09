@@ -25,8 +25,8 @@ const (
 	// resolvedDepsKey is the attribute key used to pass dependencies that don't
 	// need to be resolved by the dependency resolver in the Resolver step.
 	resolvedDepsKey = "_gazelle_ts_resolved_deps"
-	// uuidKey is the attribute key used to uniquely identify a py_library
-	// target that should be imported by a py_test or py_binary in the same
+	// uuidKey is the attribute key used to uniquely identify a ts_project
+	// target that should be imported any js or ts consuming rules
 	// Bazel package.
 	uuidKey = "_gazelle_ts_library_uuid"
 )
@@ -44,7 +44,7 @@ func (*Resolver) Name() string { return languageName }
 //
 // If nil is returned, the rule will not be indexed. If any non-nil slice is
 // returned, including an empty slice, the rule will be indexed.
-func (py *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []resolve.ImportSpec {
+func (ts *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []resolve.ImportSpec {
 	cfgs := c.Exts[languageName].(tsconfig.Configs)
 	cfg := cfgs[f.Pkg]
 	srcs := r.AttrStrings("srcs")
@@ -87,7 +87,7 @@ func importSpecFromSrc(tsProjectRoot, bzlPkg, src string) resolve.ImportSpec {
 	tsPkg := strings.ReplaceAll(relTypeScriptPkgDir, "/", ".")
 	filename := filepath.Base(src)
 	// TODO?
-	// if filename == pyLibraryEntrypointFilename {
+	// if filename == tsLibraryEntrypointFilename {
 	// 	if tsPkg != "" {
 	// 		return resolve.ImportSpec{
 	// 			Lang: languageName,
@@ -112,7 +112,7 @@ func importSpecFromSrc(tsProjectRoot, bzlPkg, src string) resolve.ImportSpec {
 // a rule is embedded by another importable rule of the same language, only
 // the embedding rule will be indexed. The embedding rule will inherit
 // the imports of the embedded rule.
-func (py *Resolver) Embeds(r *rule.Rule, from label.Label) []label.Label {
+func (ts *Resolver) Embeds(r *rule.Rule, from label.Label) []label.Label {
 	// TODO(f0rmiga): implement.
 	return make([]label.Label, 0)
 }
@@ -123,7 +123,7 @@ func (py *Resolver) Embeds(r *rule.Rule, from label.Label) []label.Label {
 // language.GenerateResult.Imports. Resolve generates a "deps" attribute (or
 // the appropriate language-specific equivalent) for each import according to
 // language-specific rules and heuristics.
-func (py *Resolver) Resolve(
+func (ts *Resolver) Resolve(
 	c *config.Config,
 	ix *resolve.RuleIndex,
 	rc *repo.RemoteCache,
@@ -133,7 +133,7 @@ func (py *Resolver) Resolve(
 ) {
 	// TODO(f0rmiga): may need to be defensive here once this Gazelle extension
 	// join with the main Gazelle binary with other rules. It may conflict with
-	// other generators that generate py_* targets.
+	// other generators that generate ts_* targets.
 	deps := treeset.NewWith(godsutils.StringComparator)
 	if modulesRaw != nil {
 		cfgs := c.Exts[languageName].(tsconfig.Configs)

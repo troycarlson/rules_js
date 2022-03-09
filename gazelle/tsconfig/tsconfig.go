@@ -28,7 +28,7 @@ const (
 	// mode. See below for the GenerationModeType constants.
 	GenerationMode = "ts_generation_mode"
 	// LibraryNamingConvention represents the directive that controls the
-	// py_library naming convention. It interpolates $package_name$ with the
+	// ts_project naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
 	// to `$package_name$_my_lib` would render to `foo_my_lib`.
 	LibraryNamingConvention = "ts_project_naming_convention"
@@ -265,12 +265,12 @@ func (c *Config) CoarseGrainedGeneration() bool {
 	return c.coarseGrainedGeneration
 }
 
-// SetLibraryNamingConvention sets the py_library target naming convention.
+// SetLibraryNamingConvention sets the ts_project target naming convention.
 func (c *Config) SetLibraryNamingConvention(libraryNamingConvention string) {
 	c.libraryNamingConvention = libraryNamingConvention
 }
 
-// RenderLibraryName returns the py_library target name by performing all
+// RenderLibraryName returns the ts_project target name by performing all
 // substitutions.
 func (c *Config) RenderLibraryName(packageName string) string {
 	return strings.ReplaceAll(c.libraryNamingConvention, packageNameNamingConventionSubstitution, packageName)

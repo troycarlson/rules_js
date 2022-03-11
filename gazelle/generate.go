@@ -15,7 +15,6 @@ import (
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
-	"github.com/google/uuid"
 
 	"aspect.build/rules_js/gazelle/tsconfig"
 )
@@ -49,7 +48,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 			if parent != nil && parent.CoarseGrainedGeneration() {
 				return language.GenerateResult{}
 			}
-		} else if !hasEntrypointFile(args.Dir) {
+		} else {
 			return language.GenerateResult{}
 		}
 	}
@@ -93,6 +92,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 				if err != nil {
 					return err
 				}
+
 				// Ignore the path if it crosses any boundary package. Walking
 				// the tree is still important because subsequent paths can
 				// represent files that have not crossed any boundaries.
@@ -101,28 +101,24 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 						return nil
 					}
 				}
+
 				if info.IsDir() {
-					// If we are visiting a directory, we determine if we should
-					// halt digging the tree based on a few criterias:
-					//   1. The directory has a BUILD or BUILD.bazel files. Then
-					//       it doesn't matter at all what it has since it's a
-					//       separate Bazel package.
-					//   2. TODO: (only for fine-grained generation) The directory has
-					// 		 an __init__.ts, __main__.ts or __test__.ts, meaning
-					// 		 a BUILD file will be generated.
+					// If we are visiting a directory we halt digging the tree if
+					// the directory has a BUILD or BUILD.bazel.
 					if isBazelPackage(path) {
 						boundaryPackages[path] = struct{}{}
 						return nil
 					}
 
-					if !cfg.CoarseGrainedGeneration() && hasEntrypointFile(path) {
+					if !cfg.CoarseGrainedGeneration() {
 						return errHaltDigging
 					}
 
 					return nil
 				}
+
 				if filepath.Ext(path) == ".ts" {
-					if cfg.CoarseGrainedGeneration() || !isEntrypointFile(path) {
+					if cfg.CoarseGrainedGeneration() {
 						f, _ := filepath.Rel(args.Dir, path)
 						excludedPatterns := cfg.ExcludedPatterns()
 						if excludedPatterns != nil {
@@ -182,7 +178,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 
 		tsProject = newTargetBuilder(tsProjectKind, tsProjectTargetName, tsProjectRoot, args.Rel).
-			setUUID(uuid.Must(uuid.NewUUID()).String()).
 			addVisibility(visibility).
 			addSrcs(tsProjectFilenames).
 			addModuleDependencies(deps).

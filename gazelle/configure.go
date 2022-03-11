@@ -41,7 +41,6 @@ func (ts *Configurer) KnownDirectives() []string {
 		tsconfig.ValidateImportStatementsDirective,
 		tsconfig.GenerationMode,
 		tsconfig.LibraryNamingConvention,
-		tsconfig.BinaryNamingConvention,
 		tsconfig.TestNamingConvention,
 	}
 }
@@ -119,8 +118,6 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			}
 		case tsconfig.LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
-		case tsconfig.BinaryNamingConvention:
-			config.SetBinaryNamingConvention(strings.TrimSpace(d.Value))
 		case tsconfig.TestNamingConvention:
 			config.SetTestNamingConvention(strings.TrimSpace(d.Value))
 		}

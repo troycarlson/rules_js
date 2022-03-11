@@ -32,10 +32,6 @@ const (
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
 	// to `$package_name$_my_lib` would render to `foo_my_lib`.
 	LibraryNamingConvention = "ts_project_naming_convention"
-	// BinaryNamingConvention represents the directive that controls the
-	// ts_project naming convention. See ts_project_naming_convention for
-	// more info on the package name interpolation.
-	BinaryNamingConvention = "ts_binary_naming_convention"
 	// TestNamingConvention represents the directive that controls the py_test
 	// naming convention. See ts_project_naming_convention for more info on
 	// the package name interpolation.
@@ -63,9 +59,7 @@ const (
 
 // defaultIgnoreFiles is the list of default values used in the
 // ts_ignore_files option.
-var defaultIgnoreFiles = map[string]struct{}{
-	"setup.py": {},
-}
+var defaultIgnoreFiles = map[string]struct{}{}
 
 // Configs is an extension of map[string]*Config. It provides finding methods
 // on top of the mapping.
@@ -279,12 +273,6 @@ func (c *Config) RenderLibraryName(packageName string) string {
 // SetBinaryNamingConvention sets the ts_project target naming convention.
 func (c *Config) SetBinaryNamingConvention(binaryNamingConvention string) {
 	c.binaryNamingConvention = binaryNamingConvention
-}
-
-// RenderBinaryName returns the ts_project target name by performing all
-// substitutions.
-func (c *Config) RenderBinaryName(packageName string) string {
-	return strings.ReplaceAll(c.binaryNamingConvention, packageNameNamingConventionSubstitution, packageName)
 }
 
 // SetTestNamingConvention sets the py_test target naming convention.

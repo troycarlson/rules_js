@@ -69,7 +69,6 @@ type Config struct {
 	ignoreFiles              map[string]struct{}
 	ignoreDependencies       map[string]struct{}
 	validateImportStatements bool
-	coarseGrainedGeneration  bool
 	libraryNamingConvention  string
 	testNamingConvention     string
 }
@@ -87,7 +86,6 @@ func New(
 		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: true,
-		coarseGrainedGeneration:  false,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
 		testNamingConvention:     fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
 	}
@@ -110,7 +108,6 @@ func (c *Config) NewChild() *Config {
 		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: c.validateImportStatements,
-		coarseGrainedGeneration:  c.coarseGrainedGeneration,
 		libraryNamingConvention:  c.libraryNamingConvention,
 		testNamingConvention:     c.testNamingConvention,
 	}
@@ -224,18 +221,6 @@ func (c *Config) SetValidateImportStatements(validate bool) {
 // it defaults to true.
 func (c *Config) ValidateImportStatements() bool {
 	return c.validateImportStatements
-}
-
-// SetCoarseGrainedGeneration sets whether coarse-grained targets should be
-// generated or not.
-func (c *Config) SetCoarseGrainedGeneration(coarseGrained bool) {
-	c.coarseGrainedGeneration = coarseGrained
-}
-
-// CoarseGrainedGeneration returns whether coarse-grained targets should be
-// generated or not.
-func (c *Config) CoarseGrainedGeneration() bool {
-	return c.coarseGrainedGeneration
 }
 
 // SetLibraryNamingConvention sets the ts_project target naming convention.

@@ -39,7 +39,6 @@ func (ts *Configurer) KnownDirectives() []string {
 		tsconfig.TypeScriptRootDirective,
 		tsconfig.IgnoreDependenciesDirective,
 		tsconfig.ValidateImportStatementsDirective,
-		tsconfig.GenerationMode,
 		tsconfig.LibraryNamingConvention,
 		tsconfig.TestNamingConvention,
 	}
@@ -105,17 +104,6 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				log.Fatal(err)
 			}
 			config.SetValidateImportStatements(v)
-		case tsconfig.GenerationMode:
-			switch tsconfig.GenerationModeType(strings.TrimSpace(d.Value)) {
-			case tsconfig.GenerationModePackage:
-				config.SetCoarseGrainedGeneration(false)
-			case tsconfig.GenerationModeProject:
-				config.SetCoarseGrainedGeneration(true)
-			default:
-				err := fmt.Errorf("invalid value for directive %q: %s",
-					tsconfig.GenerationMode, d.Value)
-				log.Fatal(err)
-			}
 		case tsconfig.LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
 		case tsconfig.TestNamingConvention:

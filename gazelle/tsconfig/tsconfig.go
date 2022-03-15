@@ -24,9 +24,6 @@ const (
 	// ValidateImportStatementsDirective represents the directive that controls
 	// whether the TypeScript import statements should be validated.
 	ValidateImportStatementsDirective = "ts_validate_import_statements"
-	// GenerationMode represents the directive that controls the target generation
-	// mode. See below for the GenerationModeType constants.
-	GenerationMode = "ts_generation_mode"
 	// LibraryNamingConvention represents the directive that controls the
 	// ts_project naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
@@ -36,21 +33,6 @@ const (
 	// naming convention. See ts_project_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "ts_test_naming_convention"
-)
-
-// GenerationModeType represents one of the generation modes for the TypeScript
-// extension.
-type GenerationModeType string
-
-// Generation modes
-const (
-	// GenerationModePackage defines the mode in which targets will be generated
-	// for each __init__.py, or when an existing BUILD or BUILD.bazel file already
-	// determines a Bazel package.
-	GenerationModePackage GenerationModeType = "package"
-	// GenerationModeProject defines the mode in which a coarse-grained target will
-	// be generated englobing sub-directories containing TypeScript files.
-	GenerationModeProject GenerationModeType = "project"
 )
 
 const (

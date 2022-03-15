@@ -50,10 +50,6 @@ const (
 	packageNameNamingConventionSubstitution = "$package_name$"
 )
 
-// defaultIgnoreFiles is the list of default values used in the
-// ts_ignore_files option.
-var defaultIgnoreFiles = map[string]struct{}{}
-
 // Configs is an extension of map[string]*Config. It provides finding methods
 // on top of the mapping.
 type Configs map[string]*Config
@@ -78,7 +74,6 @@ type Config struct {
 	environmentType   EnvironmentType
 
 	excludedPatterns         *singlylinkedlist.List
-	ignoreFiles              map[string]struct{}
 	ignoreDependencies       map[string]struct{}
 	validateImportStatements bool
 	libraryNamingConvention  string
@@ -96,7 +91,6 @@ func New(
 		tsProjectRoot:            tsProjectRoot,
 		environmentType:          EnvironmentOther,
 		excludedPatterns:         singlylinkedlist.New(),
-		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: true,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
@@ -119,7 +113,6 @@ func (c *Config) NewChild() *Config {
 		tsProjectRoot:            c.tsProjectRoot,
 		environmentType:          c.environmentType,
 		excludedPatterns:         c.excludedPatterns,
-		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: c.validateImportStatements,
 		libraryNamingConvention:  c.libraryNamingConvention,
@@ -164,36 +157,6 @@ func (c *Config) TypeScriptProjectRoot() string {
 func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 	// TODO
 	return "", false
-}
-
-// AddIgnoreFile adds a file to the list of ignored files for a given package.
-// Adding an ignored file to a package also makes it ignored on a subpackage.
-func (c *Config) AddIgnoreFile(file string) {
-	c.ignoreFiles[strings.TrimSpace(file)] = struct{}{}
-}
-
-// IgnoresFile checks if a file is ignored in the given package or in one of the
-// parent packages up to the workspace root.
-func (c *Config) IgnoresFile(file string) bool {
-	trimmedFile := strings.TrimSpace(file)
-
-	if _, ignores := defaultIgnoreFiles[trimmedFile]; ignores {
-		return true
-	}
-
-	if _, ignores := c.ignoreFiles[trimmedFile]; ignores {
-		return true
-	}
-
-	parent := c.parent
-	for parent != nil {
-		if _, ignores := parent.ignoreFiles[trimmedFile]; ignores {
-			return true
-		}
-		parent = parent.parent
-	}
-
-	return false
 }
 
 // AddIgnoreDependency adds a dependency to the list of ignored dependencies for

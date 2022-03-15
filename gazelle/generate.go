@@ -56,9 +56,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	tsProjectFilenames := treeset.NewWith(godsutils.StringComparator)
 
 	for _, f := range args.RegularFiles {
-		if cfg.IgnoresFile(filepath.Base(f)) {
-			continue
-		}
 		ext := filepath.Ext(f)
 		// TODO: js, json, especially the eteceteras.
 		// if strings.HasSuffix(f, "_test.ts") || (strings.HasPrefix(f, "test_") && ext == ".ts") {

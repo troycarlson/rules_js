@@ -34,22 +34,31 @@ go_library(
     ],
 )
 
+[
+    go_test(
+        name = test_workspace.replace("/WORKSPACE", "").replace("testdata/", "") + "_test",
+        srcs = ["js_test.go"],
+        data = [
+            ":gazelle_js_binary",
+        ] + glob(["%s/**" % test_workspace.replace("/WORKSPACE", "")]),
+        embed = [":gazelle"],
+        deps = [
+            "@bazel_gazelle//testtools:go_default_library",
+            "@com_github_emirpasic_gods//lists/singlylinkedlist",
+            "@com_github_ghodss_yaml//:yaml",
+            "@io_bazel_rules_go//go/tools/bazel:go_default_library",
+        ],
+    )
+
+    for test_workspace in glob(["testdata/**/WORKSPACE"])
+]
+
 go_test(
-    name = "gazelle_test",
+    name = "parser_test",
     srcs = [
-        "js_test.go",
         "parser_test.go",
     ],
-    data = [
-        ":gazelle_js_binary",
-    ] + glob(["testdata/**"]),
     embed = [":gazelle"],
-    deps = [
-        "@bazel_gazelle//testtools:go_default_library",
-        "@com_github_emirpasic_gods//lists/singlylinkedlist",
-        "@com_github_ghodss_yaml//:yaml",
-        "@io_bazel_rules_go//go/tools/bazel:go_default_library",
-    ],
 )
 
 gazelle_binary(

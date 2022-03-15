@@ -71,7 +71,6 @@ type Config struct {
 	validateImportStatements bool
 	coarseGrainedGeneration  bool
 	libraryNamingConvention  string
-	binaryNamingConvention   string
 	testNamingConvention     string
 }
 
@@ -90,7 +89,6 @@ func New(
 		validateImportStatements: true,
 		coarseGrainedGeneration:  false,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
-		binaryNamingConvention:   fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
 		testNamingConvention:     fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
 	}
 }
@@ -114,7 +112,6 @@ func (c *Config) NewChild() *Config {
 		validateImportStatements: c.validateImportStatements,
 		coarseGrainedGeneration:  c.coarseGrainedGeneration,
 		libraryNamingConvention:  c.libraryNamingConvention,
-		binaryNamingConvention:   c.binaryNamingConvention,
 		testNamingConvention:     c.testNamingConvention,
 	}
 }
@@ -250,11 +247,6 @@ func (c *Config) SetLibraryNamingConvention(libraryNamingConvention string) {
 // substitutions.
 func (c *Config) RenderLibraryName(packageName string) string {
 	return strings.ReplaceAll(c.libraryNamingConvention, packageNameNamingConventionSubstitution, packageName)
-}
-
-// SetBinaryNamingConvention sets the ts_project target naming convention.
-func (c *Config) SetBinaryNamingConvention(binaryNamingConvention string) {
-	c.binaryNamingConvention = binaryNamingConvention
 }
 
 // SetTestNamingConvention sets the py_test target naming convention.

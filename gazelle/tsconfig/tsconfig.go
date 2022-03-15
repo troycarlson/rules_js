@@ -29,7 +29,7 @@ const (
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
 	// to `$package_name$_my_lib` would render to `foo_my_lib`.
 	LibraryNamingConvention = "ts_project_naming_convention"
-	// TestNamingConvention represents the directive that controls the py_test
+	// TestNamingConvention represents the directive that controls the ts_project test
 	// naming convention. See ts_project_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "ts_test_naming_convention"
@@ -249,12 +249,12 @@ func (c *Config) RenderLibraryName(packageName string) string {
 	return strings.ReplaceAll(c.libraryNamingConvention, packageNameNamingConventionSubstitution, packageName)
 }
 
-// SetTestNamingConvention sets the py_test target naming convention.
+// SetTestNamingConvention sets the ts_project test target naming convention.
 func (c *Config) SetTestNamingConvention(testNamingConvention string) {
 	c.testNamingConvention = testNamingConvention
 }
 
-// RenderTestName returns the py_test target name by performing all
+// RenderTestName returns the ts_project test target name by performing all
 // substitutions.
 func (c *Config) RenderTestName(packageName string) string {
 	return strings.ReplaceAll(c.testNamingConvention, packageNameNamingConventionSubstitution, packageName)

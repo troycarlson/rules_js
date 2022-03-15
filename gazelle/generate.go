@@ -65,12 +65,8 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 		ext := filepath.Ext(f)
 		// TODO: js, json, especially the eteceteras.
-		// if !hasPyBinary && f == pyBinaryEntrypointFilename {
-		// 	hasPyBinary = true
-		// } else if !hasPyTestFile && f == pyTestEntrypointFilename {
-		// 	hasPyTestFile = true
-		// } else if strings.HasSuffix(f, "_test.ts") || (strings.HasPrefix(f, "test_") && ext == ".ts") {
-		// 	pyTestFilenames.Add(f)
+		// if strings.HasSuffix(f, "_test.ts") || (strings.HasPrefix(f, "test_") && ext == ".ts") {
+		// 	tsProjectTestFilenames.Add(f)
 		// } else if ext == ".ts" {
 		// 	tsProjectFilenames.Add(f)
 		// }

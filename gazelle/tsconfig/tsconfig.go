@@ -8,6 +8,14 @@ import (
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 )
 
+type EnvironmentType string
+
+const (
+	EnvironmentNode    EnvironmentType = "node"
+	EnvironmentBrowser EnvironmentType = "browser"
+	EnvironmentOther   EnvironmentType = "other"
+)
+
 // Directives
 const (
 	// TypeScriptGenerationDirective represents the directive that controls whether
@@ -24,6 +32,9 @@ const (
 	// ValidateImportStatementsDirective represents the directive that controls
 	// whether the TypeScript import statements should be validated.
 	ValidateImportStatementsDirective = "ts_validate_import_statements"
+	// EnvironmentDirective represents the runtime environment such as in a browser, node etc.
+	// and effects which native imports are available.
+	EnvironmentDirective = "ts_environment"
 	// LibraryNamingConvention represents the directive that controls the
 	// ts_project naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
@@ -64,6 +75,7 @@ type Config struct {
 	generationEnabled bool
 	repoRoot          string
 	tsProjectRoot     string
+	environmentType   EnvironmentType
 
 	excludedPatterns         *singlylinkedlist.List
 	ignoreFiles              map[string]struct{}
@@ -82,6 +94,7 @@ func New(
 		generationEnabled:        true,
 		repoRoot:                 repoRoot,
 		tsProjectRoot:            tsProjectRoot,
+		environmentType:          EnvironmentOther,
 		excludedPatterns:         singlylinkedlist.New(),
 		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
@@ -104,6 +117,7 @@ func (c *Config) NewChild() *Config {
 		generationEnabled:        c.generationEnabled,
 		repoRoot:                 c.repoRoot,
 		tsProjectRoot:            c.tsProjectRoot,
+		environmentType:          c.environmentType,
 		excludedPatterns:         c.excludedPatterns,
 		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
@@ -221,6 +235,10 @@ func (c *Config) SetValidateImportStatements(validate bool) {
 // it defaults to true.
 func (c *Config) ValidateImportStatements() bool {
 	return c.validateImportStatements
+}
+
+func (c *Config) SetEnvironmentType(envType EnvironmentType) {
+	c.environmentType = envType
 }
 
 // SetLibraryNamingConvention sets the ts_project target naming convention.

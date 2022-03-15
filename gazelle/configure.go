@@ -39,6 +39,7 @@ func (ts *Configurer) KnownDirectives() []string {
 		tsconfig.TypeScriptRootDirective,
 		tsconfig.IgnoreDependenciesDirective,
 		tsconfig.ValidateImportStatementsDirective,
+		tsconfig.EnvironmentDirective,
 		tsconfig.LibraryNamingConvention,
 		tsconfig.TestNamingConvention,
 	}
@@ -104,6 +105,8 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				log.Fatal(err)
 			}
 			config.SetValidateImportStatements(v)
+		case tsconfig.EnvironmentDirective:
+			config.SetEnvironmentType(tsconfig.EnvironmentType(strings.TrimSpace(d.Value)))
 		case tsconfig.LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
 		case tsconfig.TestNamingConvention:

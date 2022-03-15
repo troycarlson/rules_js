@@ -41,14 +41,10 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	}
 
 	if !isBazelPackage(args.Dir) {
-		if cfg.CoarseGrainedGeneration() {
-			// Determine if the current directory is the root of the coarse-grained
-			// generation. If not, return without generating anything.
-			parent := cfg.Parent()
-			if parent != nil && parent.CoarseGrainedGeneration() {
-				return language.GenerateResult{}
-			}
-		} else {
+		// Determine if the current directory is the root of the coarse-grained
+		// generation. If not, return without generating anything.
+		parent := cfg.Parent()
+		if parent != nil {
 			return language.GenerateResult{}
 		}
 	}
@@ -106,32 +102,26 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 						return nil
 					}
 
-					if !cfg.CoarseGrainedGeneration() {
-						return errHaltDigging
-					}
-
 					return nil
 				}
 
 				if filepath.Ext(path) == ".ts" {
-					if cfg.CoarseGrainedGeneration() {
-						f, _ := filepath.Rel(args.Dir, path)
-						excludedPatterns := cfg.ExcludedPatterns()
-						if excludedPatterns != nil {
-							it := excludedPatterns.Iterator()
-							for it.Next() {
-								excludedPattern := it.Value().(string)
-								isExcluded, err := doublestar.Match(excludedPattern, f)
-								if err != nil {
-									return err
-								}
-								if isExcluded {
-									return nil
-								}
+					f, _ := filepath.Rel(args.Dir, path)
+					excludedPatterns := cfg.ExcludedPatterns()
+					if excludedPatterns != nil {
+						it := excludedPatterns.Iterator()
+						for it.Next() {
+							excludedPattern := it.Value().(string)
+							isExcluded, err := doublestar.Match(excludedPattern, f)
+							if err != nil {
+								return err
+							}
+							if isExcluded {
+								return nil
 							}
 						}
-						tsProjectFilenames.Add(f)
 					}
+					tsProjectFilenames.Add(f)
 				}
 				return nil
 			},

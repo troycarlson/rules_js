@@ -11,7 +11,6 @@ import (
 type targetBuilder struct {
 	kind         string
 	name         string
-	projectRoot  string
 	bzlPackage   string
 	srcs         *treeset.Set
 	deps         *treeset.Set
@@ -19,11 +18,10 @@ type targetBuilder struct {
 }
 
 // newTargetBuilder constructs a new targetBuilder.
-func newTargetBuilder(kind, name, projectRoot, bzlPackage string) *targetBuilder {
+func newTargetBuilder(kind, name, bzlPackage string) *targetBuilder {
 	return &targetBuilder{
 		kind:         kind,
 		name:         name,
-		projectRoot:  projectRoot,
 		bzlPackage:   bzlPackage,
 		srcs:         treeset.NewWith(godsutils.StringComparator),
 		deps:         treeset.NewWith(moduleComparator),

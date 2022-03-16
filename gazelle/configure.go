@@ -36,7 +36,6 @@ func (ts *Configurer) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
 func (ts *Configurer) KnownDirectives() []string {
 	return []string{
 		tsconfig.TypeScriptGenerationDirective,
-		tsconfig.TypeScriptRootDirective,
 		tsconfig.IgnoreDependenciesDirective,
 		tsconfig.ValidateImportStatementsDirective,
 		tsconfig.EnvironmentDirective,
@@ -59,7 +58,7 @@ func (ts *Configurer) KnownDirectives() []string {
 func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 	// Create the root config.
 	if _, exists := c.Exts[languageName]; !exists {
-		rootConfig := tsconfig.New(c.RepoRoot, "")
+		rootConfig := tsconfig.New(c.RepoRoot)
 		c.Exts[languageName] = tsconfig.Configs{"": rootConfig}
 	}
 
@@ -92,8 +91,6 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 					tsconfig.TypeScriptGenerationDirective, d.Value)
 				log.Fatal(err)
 			}
-		case tsconfig.TypeScriptRootDirective:
-			config.SetTypeScriptProjectRoot(rel)
 		case tsconfig.IgnoreDependenciesDirective:
 			for _, ignoreDependency := range strings.Split(d.Value, ",") {
 				config.AddIgnoreDependency(ignoreDependency)

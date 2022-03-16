@@ -49,8 +49,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 	}
 
-	tsProjectRoot := cfg.TypeScriptProjectRoot()
-
 	packageName := filepath.Base(args.Dir)
 
 	tsProjectFilenames := treeset.NewWith(godsutils.StringComparator)
@@ -158,7 +156,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 			}
 		}
 
-		tsProject = newTargetBuilder(tsProjectKind, tsProjectTargetName, tsProjectRoot, args.Rel).
+		tsProject = newTargetBuilder(tsProjectKind, tsProjectTargetName, args.Rel).
 			addSrcs(tsProjectFilenames).
 			addModuleDependencies(deps).
 			build()

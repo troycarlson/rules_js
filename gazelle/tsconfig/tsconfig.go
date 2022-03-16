@@ -22,10 +22,6 @@ const (
 	// this TypeScript generation is enabled or not. Sub-packages inherit this value.
 	// Can be either "enabled" or "disabled". Defaults to "enabled".
 	TypeScriptGenerationDirective = "ts_generation"
-	// TypeScriptRootDirective represents the directive that sets a Bazel package as
-	// a TypeScript root. This is used on monorepos with multiple TypeScript projects
-	// that don't share the top-level of the workspace as the root.
-	TypeScriptRootDirective = "ts_root"
 	// IgnoreDependenciesDirective represents the directive that controls the
 	// ignored dependencies from the generated targets.
 	IgnoreDependenciesDirective = "ts_ignore_dependencies"
@@ -70,7 +66,6 @@ type Config struct {
 
 	generationEnabled bool
 	repoRoot          string
-	tsProjectRoot     string
 	environmentType   EnvironmentType
 
 	excludedPatterns         *singlylinkedlist.List
@@ -83,12 +78,10 @@ type Config struct {
 // New creates a new Config.
 func New(
 	repoRoot string,
-	tsProjectRoot string,
 ) *Config {
 	return &Config{
 		generationEnabled:        true,
 		repoRoot:                 repoRoot,
-		tsProjectRoot:            tsProjectRoot,
 		environmentType:          EnvironmentOther,
 		excludedPatterns:         singlylinkedlist.New(),
 		ignoreDependencies:       make(map[string]struct{}),
@@ -110,7 +103,6 @@ func (c *Config) NewChild() *Config {
 		parent:                   c,
 		generationEnabled:        c.generationEnabled,
 		repoRoot:                 c.repoRoot,
-		tsProjectRoot:            c.tsProjectRoot,
 		environmentType:          c.environmentType,
 		excludedPatterns:         c.excludedPatterns,
 		ignoreDependencies:       make(map[string]struct{}),
@@ -139,16 +131,6 @@ func (c *Config) SetGenerationEnabled(enabled bool) {
 // GenerationEnabled returns whether the extension is enabled or not.
 func (c *Config) GenerationEnabled() bool {
 	return c.generationEnabled
-}
-
-// SetTypeScriptProjectRoot sets the TypeScript project root.
-func (c *Config) SetTypeScriptProjectRoot(tsProjectRoot string) {
-	c.tsProjectRoot = tsProjectRoot
-}
-
-// TypeScriptProjectRoot returns the TypeScript project root.
-func (c *Config) TypeScriptProjectRoot() string {
-	return c.tsProjectRoot
 }
 
 // FindThirdPartyDependency scans the gazelle manifests for the current config

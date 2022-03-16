@@ -41,16 +41,13 @@ func (*Resolver) Name() string { return languageName }
 // If nil is returned, the rule will not be indexed. If any non-nil slice is
 // returned, including an empty slice, the rule will be indexed.
 func (ts *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []resolve.ImportSpec {
-	cfgs := c.Exts[languageName].(tsconfig.Configs)
-	cfg := cfgs[f.Pkg]
 	srcs := r.AttrStrings("srcs")
 	provides := make([]resolve.ImportSpec, 0, len(srcs)+1)
 	for _, src := range srcs {
 		ext := filepath.Ext(src)
 		// TODO: json? js? etc?
 		if ext == ".ts" {
-			tsProjectRoot := cfg.TypeScriptProjectRoot()
-			provide := importSpecFromSrc(tsProjectRoot, f.Pkg, src)
+			provide := importSpecFromSrc(f.Pkg, src)
 			provides = append(provides, provide)
 		}
 	}
@@ -63,9 +60,9 @@ func (ts *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []reso
 // importSpecFromSrc determines the ImportSpec based on the target that contains the src so that
 // the target can be indexed for import statements that match the calculated src relative to the its
 // TypeScript project root.
-func importSpecFromSrc(tsProjectRoot, bzlPkg, src string) resolve.ImportSpec {
+func importSpecFromSrc(bzlPkg, src string) resolve.ImportSpec {
 	tsPkgDir := filepath.Join(bzlPkg, filepath.Dir(src))
-	relTypeScriptPkgDir, err := filepath.Rel(tsProjectRoot, tsPkgDir)
+	relTypeScriptPkgDir, err := filepath.Rel("", tsPkgDir)
 	if err != nil {
 		panic(fmt.Errorf("unexpected failure: %v", err))
 	}
@@ -146,7 +143,6 @@ func ResolveModuleDeps(
 ) {
 	cfgs := c.Exts[languageName].(tsconfig.Configs)
 	cfg := cfgs[from.Pkg]
-	tsProjectRoot := cfg.TypeScriptProjectRoot()
 	it := modules.Iterator()
 	explainDependency := os.Getenv("EXPLAIN_DEPENDENCY")
 	hasFatalError := false
@@ -189,11 +185,10 @@ MODULE_LOOP:
 				filteredMatches = append(filteredMatches, match)
 			}
 			if len(filteredMatches) > 1 {
+				// TODO(jbedard): this loop is now unnecessary?
 				sameRootMatches := make([]resolve.FindResult, 0, len(filteredMatches))
 				for _, match := range filteredMatches {
-					if strings.HasPrefix(match.Label.Pkg, tsProjectRoot) {
-						sameRootMatches = append(sameRootMatches, match)
-					}
+					sameRootMatches = append(sameRootMatches, match)
 				}
 				if len(sameRootMatches) != 1 {
 					err := fmt.Errorf(

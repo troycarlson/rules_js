@@ -36,7 +36,7 @@ go_library(
 
 [
     go_test(
-        name = test_workspace.replace("/WORKSPACE", "").replace("testdata/", "") + "_test",
+        name = test_workspace.replace("/WORKSPACE", "").replace("tests/", "") + "_test",
         srcs = ["js_test.go"],
         data = [
             ":gazelle_js_binary",
@@ -50,7 +50,7 @@ go_library(
         ],
     )
 
-    for test_workspace in glob(["testdata/**/WORKSPACE"])
+    for test_workspace in glob(["tests/**/WORKSPACE"])
 ]
 
 go_test(

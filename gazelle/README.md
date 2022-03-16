@@ -95,7 +95,7 @@ for some general directives that may be useful.
 In particular, the `resolve` directive is language-specific
 and can be used with Python.
 Examples of these directives in use can be found in the
-/gazelle/testdata folder in the aspect-build/rules_js repo.
+/gazelle/tests folder in the aspect-build/rules_js repo.
 
 TODO TypeScript-specific directives are as follows:
 

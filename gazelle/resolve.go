@@ -179,30 +179,7 @@ MODULE_LOOP:
 					"which resolves from the third-party module %q from the wheel %q.\n",
 					explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber, mod.Name, dep)
 			}
-		} else {
-			matches := ix.FindRulesByImportWithConfig(c, imp, languageName)
-			if len(matches) == 0 {
-				// Check if the imported module is part of the standard library.
-				// if isStd, err := isStdModule(mod); err != nil {
-				// 	log.Println("ERROR: ", err)
-				// 	hasFatalError = true
-				// 	continue MODULE_LOOP
-				// } else if isStd {
-				// 	continue MODULE_LOOP
-				// }
-				if cfg.ValidateImportStatements() {
-					err := fmt.Errorf(
-						"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+
-							"\t1. Add it as a dependency in the requirements.txt file.\n"+
-							"\t2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
-							"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the TypeScript file.\n",
-						mod.Name, mod.LineNumber, mod.Filepath,
-					)
-					log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), err)
-					hasFatalError = true
-					continue MODULE_LOOP
-				}
-			}
+		} else if matches := ix.FindRulesByImportWithConfig(c, imp, languageName); len(matches) > 0 {
 			filteredMatches := make([]resolve.FindResult, 0, len(matches))
 			for _, match := range matches {
 				if match.IsSelfImport(from) {
@@ -210,9 +187,6 @@ MODULE_LOOP:
 					continue MODULE_LOOP
 				}
 				filteredMatches = append(filteredMatches, match)
-			}
-			if len(filteredMatches) == 0 {
-				continue
 			}
 			if len(filteredMatches) > 1 {
 				sameRootMatches := make([]resolve.FindResult, 0, len(filteredMatches))
@@ -231,16 +205,27 @@ MODULE_LOOP:
 					continue MODULE_LOOP
 				}
 				filteredMatches = sameRootMatches
+				matchLabel := filteredMatches[0].Label.Rel(from.Repo, from.Pkg)
+				dep := matchLabel.String()
+				deps.Add(dep)
+				if explainDependency == dep {
+					log.Printf("Explaining dependency (%s): "+
+						"in the target %q, the file %q imports %q at line %d, "+
+						"which resolves from the first-party indexed labels.\n",
+						explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber)
+				}
 			}
-			matchLabel := filteredMatches[0].Label.Rel(from.Repo, from.Pkg)
-			dep := matchLabel.String()
-			deps.Add(dep)
-			if explainDependency == dep {
-				log.Printf("Explaining dependency (%s): "+
-					"in the target %q, the file %q imports %q at line %d, "+
-					"which resolves from the first-party indexed labels.\n",
-					explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber)
-			}
+		} else if cfg.ValidateImportStatements() {
+			err := fmt.Errorf(
+				"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+
+					"\t1. Add it as a dependency in the requirements.txt file.\n"+
+					"\t2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
+					"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the TypeScript file.\n",
+				mod.Name, mod.LineNumber, mod.Filepath,
+			)
+			log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), err)
+			hasFatalError = true
+			continue MODULE_LOOP
 		}
 	}
 	if hasFatalError {

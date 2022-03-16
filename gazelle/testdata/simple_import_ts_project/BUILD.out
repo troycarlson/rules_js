@@ -6,5 +6,4 @@ ts_project(
         "lib.ts",
         "main.ts",
     ],
-    visibility = ["//:__subpackages__"],
 )

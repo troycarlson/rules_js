@@ -129,8 +129,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 	}
 
-	visibility := fmt.Sprintf("//%s:__subpackages__", tsProjectRoot)
-
 	var result language.GenerateResult
 	result.Gen = make([]*rule.Rule, 0)
 
@@ -161,7 +159,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 
 		tsProject = newTargetBuilder(tsProjectKind, tsProjectTargetName, tsProjectRoot, args.Rel).
-			addVisibility(visibility).
 			addSrcs(tsProjectFilenames).
 			addModuleDependencies(deps).
 			build()

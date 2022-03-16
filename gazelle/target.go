@@ -16,7 +16,6 @@ type targetBuilder struct {
 	srcs         *treeset.Set
 	deps         *treeset.Set
 	resolvedDeps *treeset.Set
-	visibility   *treeset.Set
 }
 
 // newTargetBuilder constructs a new targetBuilder.
@@ -29,7 +28,6 @@ func newTargetBuilder(kind, name, projectRoot, bzlPackage string) *targetBuilder
 		srcs:         treeset.NewWith(godsutils.StringComparator),
 		deps:         treeset.NewWith(moduleComparator),
 		resolvedDeps: treeset.NewWith(godsutils.StringComparator),
-		visibility:   treeset.NewWith(godsutils.StringComparator),
 	}
 }
 
@@ -51,20 +49,11 @@ func (t *targetBuilder) addModuleDependencies(deps *treeset.Set) *targetBuilder 
 	return t
 }
 
-// addVisibility adds a visibility to the target.
-func (t *targetBuilder) addVisibility(visibility string) *targetBuilder {
-	t.visibility.Add(visibility)
-	return t
-}
-
 // build returns the assembled *rule.Rule for the target.
 func (t *targetBuilder) build() *rule.Rule {
 	r := rule.NewRule(t.kind, t.name)
 	if !t.srcs.Empty() {
 		r.SetAttr("srcs", t.srcs.Values())
-	}
-	if !t.visibility.Empty() {
-		r.SetAttr("visibility", t.visibility.Values())
 	}
 	if !t.deps.Empty() {
 		r.SetPrivateAttr(config.GazelleImportsKey, t.deps)

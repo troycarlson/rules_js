@@ -4,16 +4,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "gazelle",
-    srcs = [
-        "configure.go",
-        "fix.go",
-        "generate.go",
-        "kinds.go",
-        "language.go",
-        "parser.go",
-        "resolve.go",
-        "target.go",
-    ],
+    srcs = glob(["*.go"], exclude = ["*_test.go"]),
     importpath = "aspect.build/rules_js/gazelle",
     visibility = ["//visibility:public"],
     deps = [
@@ -53,13 +44,16 @@ go_library(
     for test_workspace in glob(["tests/**/WORKSPACE"])
 ]
 
-go_test(
-    name = "parser_test",
-    srcs = [
-        "parser_test.go",
-    ],
-    embed = [":gazelle"],
-)
+
+[
+    go_test(
+        name = "%s_test" % (t.replace("_test.go", "")),
+        srcs = [t],
+        deps = [],
+        embed = [":gazelle"],
+    )
+    for t in glob(["*_test.go"], exclude = ["js_test.go"])
+]
 
 gazelle_binary(
     name = "gazelle_js_binary",

@@ -19,9 +19,8 @@ var tsKinds = map[string]rule.KindInfo{
 	tsProjectKind: {
 		MatchAny: true,
 		NonEmptyAttrs: map[string]bool{
-			"deps":       true,
-			"srcs":       true,
-			"visibility": true,
+			"deps": true,
+			"srcs": true,
 		},
 		SubstituteAttrs: map[string]bool{},
 		MergeableAttrs: map[string]bool{

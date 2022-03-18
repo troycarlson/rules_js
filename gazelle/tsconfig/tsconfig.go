@@ -137,7 +137,8 @@ func (c *Config) GenerationEnabled() bool {
 // and the parent configs up to the root finding if it can resolve the module
 // name.
 func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
-	// TODO
+	// TODO(jbedard)
+
 	return "", false
 }
 
@@ -182,8 +183,14 @@ func (c *Config) ValidateImportStatements() bool {
 	return c.validateImportStatements
 }
 
+// SetEnvironment sets the TypeScirpt/JS environment type
 func (c *Config) SetEnvironmentType(envType EnvironmentType) {
 	c.environmentType = envType
+}
+
+// Environment returns the TypeScirpt/JS environment type
+func (c *Config) EnvironmentType() EnvironmentType {
+	return c.environmentType
 }
 
 // SetLibraryNamingConvention sets the ts_project target naming convention.

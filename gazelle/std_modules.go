@@ -3,6 +3,6 @@ package gazelle
 func init() {
 }
 
-func isStdModule(m module) (bool, error) {
+func isStdModule(m ImportStatement) (bool, error) {
 	return false, nil
 }

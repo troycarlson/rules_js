@@ -15,29 +15,21 @@ type Scanner struct {
 
 // Scan reads a file named name in directory dir into a string.
 // The contents of the file are stored in fileInfo.Content.
-func (s *Scanner) Scan(dir string, name string) *FileInfo {
+func (s *Scanner) Scan(dir string, name string) (error, string) {
 	fpath := filepath.Join(dir, name)
-	filename := name
 	content, err := ioutil.ReadFile(fpath)
-	if err != nil {
-		log.Printf("%s: error reading ts file: %v", fpath, err)
-		return nil
-	}
-	return &FileInfo{
-		Path:     fpath,
-		Filename: filename,
-		Content:  string(content),
-	}
+	return err, string(content)
 }
 
 func NewScanner() *Scanner {
 	return &Scanner{}
 }
 
-type FileInfo struct {
-	Path     string
-	Filename string
-	Content  string
+type FileImportInfo struct {
+	// The path being imported.
+	Path string `json:"path"`
+	// The source line number of the import.
+	LineNumber uint32 `json:"lineno"`
 }
 
 type Parser struct {
@@ -68,12 +60,9 @@ func filenameToLoader(filename string) api.Loader {
 
 // ParseImports returns all the imports from a file
 // after parsing it.
-func (p *Parser) ParseImports(fileInfo *FileInfo) []string {
-	imports := []string{}
-	if filepath.Ext(fileInfo.Filename) == ".css" {
-		// No need to try to parse CSS.
-		return imports
-	}
+func (p *Parser) ParseImports(filePath, source string) []FileImportInfo {
+	imports := []FileImportInfo{}
+
 	// Construct an esbuild plugin that pulls out all the imports.
 	plugin := api.Plugin{
 		Name: "GetImports",
@@ -82,7 +71,10 @@ func (p *Parser) ParseImports(fileInfo *FileInfo) []string {
 			// we'll get access to every import in the file.
 			callback := func(args api.OnResolveArgs) (api.OnResolveResult, error) {
 				// Add the imported string to our list of imports.
-				imports = append(imports, args.Path)
+				imports = append(imports, FileImportInfo{
+					Path:       args.Path,
+					LineNumber: 0,
+				})
 				return api.OnResolveResult{
 					// Mark the import as external so esbuild doesn't complain
 					// about not being able to find the import.
@@ -97,11 +89,11 @@ func (p *Parser) ParseImports(fileInfo *FileInfo) []string {
 	}
 	options := api.BuildOptions{
 		Stdin: &api.StdinOptions{
-			Contents:   fileInfo.Content,
-			Sourcefile: fileInfo.Filename,
+			Contents:   source,
+			Sourcefile: filePath,
 			// The Loader determines how esbuild will parse the file.
 			// We want to parse .ts files as typescript, .tsx files as .tsx, etc.
-			Loader: filenameToLoader(fileInfo.Filename),
+			Loader: filenameToLoader(filePath),
 		},
 		Plugins: []api.Plugin{
 			plugin,
@@ -113,7 +105,7 @@ func (p *Parser) ParseImports(fileInfo *FileInfo) []string {
 	if len(result.Errors) > 0 {
 		// Inform users that some files couldn't be fully parsed.
 		// No need to crash the program though.
-		log.Printf("Encountered errors parsing source %v: %v\n", fileInfo.Filename, result.Errors)
+		log.Printf("Encountered errors parsing source %v: %v\n", filePath, result.Errors)
 	}
 
 	return imports

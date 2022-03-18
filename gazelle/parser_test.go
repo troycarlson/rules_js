@@ -202,14 +202,16 @@ export default ExampleWithKeys;
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			fileInfo := FileInfo{
-				Content:  tc.ts,
-				Filename: tc.filename,
-			}
 			p := NewParser()
-			actual := p.ParseImports(&fileInfo)
-			if !reflect.DeepEqual(actual, tc.expected) {
-				t.Errorf("Inequality.\nactual:  %#v;\nexpected: %#v\ntypescript code:\n%v", actual, tc.expected, tc.ts)
+			actualModules := p.ParseImports(tc.filename, tc.ts)
+
+			var actualImports []string = []string{}
+			for _, m := range actualModules {
+				actualImports = append(actualImports, m.Path)
+			}
+
+			if !reflect.DeepEqual(actualImports, tc.expected) {
+				t.Errorf("Inequality.\nactual:  %#v;\nexpected: %#v\ntypescript code:\n%v", actualImports, tc.expected, tc.ts)
 			}
 		})
 	}

@@ -42,7 +42,7 @@ func (t *targetBuilder) addSrcs(srcs *treeset.Set) *targetBuilder {
 func (t *targetBuilder) addModuleDependencies(deps *treeset.Set) *targetBuilder {
 	it := deps.Iterator()
 	for it.Next() {
-		//TODO t.deps.Add(it.Value().(module))
+		t.deps.Add(it.Value().(ImportStatement))
 	}
 	return t
 }
@@ -60,19 +60,19 @@ func (t *targetBuilder) build() *rule.Rule {
 	return r
 }
 
-// module represents a fully-qualified, dot-separated, Python module as seen on
-// the import statement, alongside the line number where it happened.
-type module struct {
-	// The fully-qualified, dot-separated, Python module name as seen on import
-	// statements.
-	Name string `json:"name"`
+// ImportStatement represents a path imported from a source file.
+// Imports can be of any form (es6, cjs, amd, ...).
+// Imports may be relative ot the source, absolute, workspace, named modules etc.
+type ImportStatement struct {
+	// The TypeScript module name as seen on import statements.
+	Path string `json:"path"`
 	// The line number where the import happened.
-	LineNumber uint32 `json:"lineno"`
-	// The path to the module file relative to the Bazel workspace root.
-	Filepath string `json:"filepath"`
+	SourceLineNumber uint32 `json:"sourcelineno"`
+	// The path of the file containing the import
+	SourcePath string `json:"sourcepath"`
 }
 
 // moduleComparator compares modules by name.
 func moduleComparator(a, b interface{}) int {
-	return godsutils.StringComparator(a.(module).Name, b.(module).Name)
+	return godsutils.StringComparator(a.(ImportStatement).Path, b.(ImportStatement).Path)
 }

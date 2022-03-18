@@ -1,9 +1,9 @@
 load("@npm//@bazel/typescript:index.bzl", "ts_project")
 
 ts_project(
-    name = "simple_import_ts_project",
+    name = "simple_import_parentdir",
     srcs = [
         "lib.ts",
-        "main.ts",
+        "subdir/main.ts",
     ],
 )

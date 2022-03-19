@@ -179,8 +179,8 @@ func ResolveModuleDeps(
 			if EXPLAIN_DEPENDENCY == dep {
 				log.Printf("Explaining dependency (%s): "+
 					"in the target %q, the file %q imports %q at line %d, "+
-					"which resolves from the third-party module %q from the wheel %q.\n",
-					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, mod.Path, dep)
+					"which resolves from the third-party package %q.\n",
+					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, dep)
 			}
 		} else if cfg.ValidateImportStatements() {
 			err := fmt.Errorf(

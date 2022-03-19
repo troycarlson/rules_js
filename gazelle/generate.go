@@ -75,7 +75,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		checkCollisionErrors(tsProjectTargetName, args)
 	}
 
-	importedFiles := treeset.NewWith(moduleComparator)
+	importedFiles := treeset.NewWith(importStatementComparator)
 
 	fileIt := sourceFiles.Iterator()
 	for fileIt.Next() {
@@ -99,7 +99,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 
 	tsProject := newTargetBuilder(tsProjectKind, tsProjectTargetName, args.Rel).
 		addSrcs(sourceFiles).
-		addModuleDependencies(importedFiles).
+		addDependencies(importedFiles).
 		build()
 
 	// TODO(jbedard): spec/test project, js_library?

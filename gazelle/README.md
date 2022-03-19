@@ -1,87 +1,42 @@
-# Python Gazelle plugin
+# TypeScript Gazelle plugin
 
 This directory contains a plugin for
 [Gazelle](https://github.com/bazelbuild/bazel-gazelle)
-that generates BUILD file content for Python code.
+that generates BUILD file content for TypeScript code.
 
 ## Installation
 
 First, you'll need to add Gazelle to your `WORKSPACE` file.
 Follow the instructions at https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
 
-Next, we need to fetch the third-party Go libraries that the python extension
+Next, we need to fetch the third-party Go libraries that the TypeScript extension
 depends on.
 
 Add this to your `WORKSPACE`:
 
 ```starlark
-# To compile the rules_python gazelle extension from source,
+# To compile the rules_js gazelle extension from source,
 # we must fetch some third-party go dependencies that it uses.
-load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+load("@rules_js//gazelle:deps.bzl", _ts_gazelle_deps = "gazelle_deps")
 
-_py_gazelle_deps()
+_ts_gazelle_deps()
 ```
 
-Next, we'll fetch metadata about your Python dependencies, so that gazelle can
-determine which package a given import statement comes from. This is provided
-by the `modules_mapping` rule. We'll make a target for consuming this
-`modules_mapping`, and writing it as a manifest file for Gazelle to read.
-This is checked into the repo for speed, as it takes some time to calculate
-in a large monorepo.
-
-Create a file `gazelle_python.yaml` next to your `requirements.txt`
-file. (You can just use `touch` at this point, it just needs to exist.)
-
-Then put this in your `BUILD.bazel` file next to the `requirements.txt`:
-
-```starlark
-load("@pip//:requirements.bzl", "all_whl_requirements")
-
-# This rule fetches the metadata for python packages we depend on. That data is
-# required for the gazelle_python_manifest rule to update our manifest file.
-modules_mapping(
-    name = "modules_map",
-    wheels = all_whl_requirements,
-)
-
-# Gazelle python extension needs a manifest file mapping from
-# an import to the installed package that provides it.
-# This macro produces two targets:
-# - //:gazelle_python_manifest.update can be used with `bazel run`
-#   to recalculate the manifest
-# - //:gazelle_python_manifest.test is a test target ensuring that
-#   the manifest doesn't need to be updated
-gazelle_python_manifest(
-    name = "gazelle_python_manifest",
-    modules_mapping = ":modules_map",
-    # This is what we called our `pip_install` rule, where third-party
-    # python libraries are loaded in BUILD files.
-    pip_repository_name = "pip",
-    # When using pip_parse instead of pip_install, set the following.
-    # pip_repository_incremental = True,
-    # This should point to wherever we declare our python dependencies
-    # (the same as what we passed to the modules_mapping rule in WORKSPACE)
-    requirements = "//:requirements_lock.txt",
-)
-```
-
-That's it, now you can finally run `bazel run //:gazelle` anytime
-you edit Python code, and it should update your `BUILD` files correctly.
-
-A fully-working example is in [`examples/build_file_generation`](examples/build_file_generation).
+That's it, now you can run `bazel run //:gazelle` anytime you edit TypeScript code,
+and it should update your `BUILD` files correctly.
 
 ## Usage
 
 Gazelle is non-destructive.
-It will try to leave your edits to BUILD files alone, only making updates to `py_*` targets.
+It will try to leave your edits to BUILD files alone, only making updates to `ts_*` targets.
 However it will remove dependencies that appear to be unused, so it's a
 good idea to check in your work before running Gazelle so you can easily
 revert any changes it made.
 
-The rules_python extension assumes some conventions about your Python code.
+The rules_js extension assumes some conventions about your TypeScript code.
 These are noted below, and might require changes to your existing code.
 
-Note that the `gazelle` program has multiple commands. At present, only the `update` command (the default) does anything for Python code.
+Note that the `gazelle` program has multiple commands. At present, only the `update` command (the default) does anything for TypeScript code.
 
 ### Directives
 
@@ -93,7 +48,7 @@ folder.
 See https://github.com/bazelbuild/bazel-gazelle#directives
 for some general directives that may be useful.
 In particular, the `resolve` directive is language-specific
-and can be used with Python.
+and can be used with TypeScript.
 Examples of these directives in use can be found in the
 /gazelle/tests folder in the aspect-build/rules_js repo.
 
@@ -106,12 +61,12 @@ TODO TypeScript-specific directives are as follows:
 
 ### Libraries
 
-TypeScript source files are those ending in `.ts`.
+TypeScript source files are those ending in `.ts`, `.tsx` as well as `.js`, `.mjs`.
 
 TODO: differenciate source vs spec files?
 
 First, we look for the nearest ancestor BUILD file starting from the folder
-containing the Python source file.
+containing the TypeScript source file.
 
 If there is no `ts_project` in this BUILD file, one is created, using the
 package name as the target's name. This makes it the default target in the

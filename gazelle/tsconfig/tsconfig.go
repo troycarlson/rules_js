@@ -133,10 +133,8 @@ func (c *Config) GenerationEnabled() bool {
 	return c.generationEnabled
 }
 
-// FindThirdPartyDependency scans the gazelle manifests for the current config
-// and the parent configs up to the root finding if it can resolve the module
-// name.
-func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
+// FindThirdPartyDependency finds third-party dependencies which fulfill the given import path.
+func (c *Config) FindThirdPartyDependency(imp string) (string, bool) {
 	// TODO(jbedard)
 
 	return "", false

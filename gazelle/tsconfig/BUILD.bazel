@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "tsconfig",
-    srcs = glob(["*.go"]),
-    importpath = "aspect.build/rules_js/gazelle/tsconfig",
-    visibility = ["//visibility:public"],
-    deps = ["@com_github_emirpasic_gods//lists/singlylinkedlist"],
-)

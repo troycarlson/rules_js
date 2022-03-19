@@ -9,8 +9,6 @@ import (
 
 	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/rule"
-
-	"aspect.build/rules_js/gazelle/tsconfig"
 )
 
 // Configurer satisfies the config.Configurer interface. It's the
@@ -35,12 +33,12 @@ func (ts *Configurer) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
 // any Configurer.
 func (ts *Configurer) KnownDirectives() []string {
 	return []string{
-		tsconfig.TypeScriptGenerationDirective,
-		tsconfig.IgnoreDependenciesDirective,
-		tsconfig.ValidateImportStatementsDirective,
-		tsconfig.EnvironmentDirective,
-		tsconfig.LibraryNamingConvention,
-		tsconfig.TestNamingConvention,
+		TypeScriptGenerationDirective,
+		IgnoreDependenciesDirective,
+		ValidateImportStatementsDirective,
+		EnvironmentDirective,
+		LibraryNamingConvention,
+		TestNamingConvention,
 	}
 }
 
@@ -58,11 +56,11 @@ func (ts *Configurer) KnownDirectives() []string {
 func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 	// Create the root config.
 	if _, exists := c.Exts[languageName]; !exists {
-		rootConfig := tsconfig.New(c.RepoRoot)
-		c.Exts[languageName] = tsconfig.Configs{"": rootConfig}
+		rootConfig := NewTypeScriptConfig(c.RepoRoot)
+		c.Exts[languageName] = Configs{"": rootConfig}
 	}
 
-	configs := c.Exts[languageName].(tsconfig.Configs)
+	configs := c.Exts[languageName].(Configs)
 
 	config, exists := configs[rel]
 	if !exists {
@@ -80,7 +78,7 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 		case "exclude":
 			// We record the exclude directive since we do manual tree traversal of subdirs.
 			config.AddExcludedPattern(strings.TrimSpace(d.Value))
-		case tsconfig.TypeScriptGenerationDirective:
+		case TypeScriptGenerationDirective:
 			switch d.Value {
 			case "enabled":
 				config.SetGenerationEnabled(true)
@@ -88,24 +86,24 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				config.SetGenerationEnabled(false)
 			default:
 				err := fmt.Errorf("invalid value for directive %q: %s: possible values are enabled/disabled",
-					tsconfig.TypeScriptGenerationDirective, d.Value)
+					TypeScriptGenerationDirective, d.Value)
 				log.Fatal(err)
 			}
-		case tsconfig.IgnoreDependenciesDirective:
+		case IgnoreDependenciesDirective:
 			for _, ignoreDependency := range strings.Split(d.Value, ",") {
 				config.AddIgnoreDependency(ignoreDependency)
 			}
-		case tsconfig.ValidateImportStatementsDirective:
+		case ValidateImportStatementsDirective:
 			v, err := strconv.ParseBool(strings.TrimSpace(d.Value))
 			if err != nil {
 				log.Fatal(err)
 			}
 			config.SetValidateImportStatements(v)
-		case tsconfig.EnvironmentDirective:
-			config.SetEnvironmentType(tsconfig.EnvironmentType(strings.TrimSpace(d.Value)))
-		case tsconfig.LibraryNamingConvention:
+		case EnvironmentDirective:
+			config.SetEnvironmentType(EnvironmentType(strings.TrimSpace(d.Value)))
+		case LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
-		case tsconfig.TestNamingConvention:
+		case TestNamingConvention:
 			config.SetTestNamingConvention(strings.TrimSpace(d.Value))
 		}
 	}

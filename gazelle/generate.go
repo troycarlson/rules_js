@@ -13,8 +13,6 @@ import (
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
-
-	"aspect.build/rules_js/gazelle/tsconfig"
 )
 
 var (
@@ -37,7 +35,7 @@ const (
 // GenerateRules is called in each directory where an update is requested
 // in depth-first post-order.
 func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.GenerateResult {
-	cfgs := args.Config.Exts[languageName].(tsconfig.Configs)
+	cfgs := args.Config.Exts[languageName].(Configs)
 	cfg := cfgs[args.Rel]
 
 	// When we return empty, we mean that we don't generate anything, but this
@@ -133,7 +131,7 @@ func isBazelPackage(dir string) bool {
 	return false
 }
 
-func collectSourceFiles(cfg *tsconfig.Config, args language.GenerateArgs, files *treeset.Set) error {
+func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs, files *treeset.Set) error {
 	// Source files
 	for _, f := range args.RegularFiles {
 		if isImportableFile(f) {
@@ -212,7 +210,7 @@ func checkCollisionErrors(tsProjectTargetName string, args language.GenerateArgs
 			err := fmt.Errorf("failed to generate target %q of kind %q: "+
 				"a target of kind %q with the same name already exists. "+
 				"Use the '# gazelle:%s' directive to change the naming convention.",
-				fqTarget.String(), tsProjectKind, t.Kind(), tsconfig.LibraryNamingConvention)
+				fqTarget.String(), tsProjectKind, t.Kind(), LibraryNamingConvention)
 			collisionErrors.Add(err)
 		}
 	}

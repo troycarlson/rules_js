@@ -15,8 +15,6 @@ import (
 	bzl "github.com/bazelbuild/buildtools/build"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
-
-	"aspect.build/rules_js/gazelle/tsconfig"
 )
 
 const (
@@ -114,7 +112,7 @@ func ResolveModuleDeps(
 	from label.Label,
 	deps *treeset.Set,
 ) {
-	cfgs := c.Exts[languageName].(tsconfig.Configs)
+	cfgs := c.Exts[languageName].(Configs)
 	cfg := cfgs[from.Pkg]
 	hasFatalError := false
 

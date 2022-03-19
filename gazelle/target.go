@@ -23,9 +23,9 @@ func newTargetBuilder(kind, name, bzlPackage string) *TargetBuilder {
 		kind:         kind,
 		name:         name,
 		bzlPackage:   bzlPackage,
-		srcs:         treeset.NewWith(godsutils.StringComparator),
+		srcs:         treeset.NewWithStringComparator(),
 		deps:         treeset.NewWith(importStatementComparator),
-		resolvedDeps: treeset.NewWith(godsutils.StringComparator),
+		resolvedDeps: treeset.NewWithStringComparator(),
 	}
 }
 

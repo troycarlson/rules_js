@@ -14,7 +14,6 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/rule"
 	bzl "github.com/bazelbuild/buildtools/build"
 	"github.com/emirpasic/gods/sets/treeset"
-	godsutils "github.com/emirpasic/gods/utils"
 )
 
 const (
@@ -88,7 +87,7 @@ func (ts *Resolver) Resolve(
 	modulesRaw interface{},
 	from label.Label,
 ) {
-	deps := treeset.NewWith(godsutils.StringComparator)
+	deps := treeset.NewWithStringComparator()
 
 	// Pre-resolved deps
 	resolvedDepsIt := r.PrivateAttr(resolvedDepsKey).(*treeset.Set).Iterator()

@@ -12,7 +12,6 @@ import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
-	godsutils "github.com/emirpasic/gods/utils"
 )
 
 var (
@@ -53,7 +52,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 
 	tsProjectTargetName := cfg.RenderLibraryName(filepath.Base(args.Dir))
 
-	sourceFiles := treeset.NewWith(godsutils.StringComparator)
+	sourceFiles := treeset.NewWithStringComparator()
 
 	collectErr := collectSourceFiles(cfg, args, sourceFiles)
 	if collectErr != nil {

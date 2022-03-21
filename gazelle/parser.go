@@ -102,10 +102,11 @@ func (p *Parser) ParseImports(filePath, source string) []FileImportInfo {
 		Bundle: true,
 	}
 	result := api.Build(options)
-	if len(result.Errors) > 0 {
+
+	for _, e := range result.Errors {
 		// Inform users that some files couldn't be fully parsed.
 		// No need to crash the program though.
-		log.Printf("Encountered errors parsing source %v: %v\n", filePath, result.Errors)
+		log.Printf("Encountered error parsing source %v:%v\n", e.Location.File, e.Location.Line)
 	}
 
 	return imports

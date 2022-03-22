@@ -35,7 +35,6 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/testtools"
 	"github.com/bazelbuild/rules_go/go/tools/bazel"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
-	"github.com/ghodss/yaml"
 )
 
 const (
@@ -80,7 +79,12 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		var inputs []testtools.FileSpec
 		var goldens []testtools.FileSpec
 
-		var config *testYAML
+		// TODO(jbedard): load from txt files
+		// See: https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.md#gazelle_generation_test-gazelle_binary
+		var ExpectedExitCode = 0
+		var ExpectedStdout = ""
+		var ExpectedStderr = ""
+
 		for _, f := range files {
 			path := f.Path
 			trim := testCasesPath + name + "/"
@@ -97,16 +101,6 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 			content, err := ioutil.ReadFile(path)
 			if err != nil {
 				t.Errorf("ioutil.ReadFile(%q) error: %v", path, err)
-			}
-
-			if filepath.Base(shortPath) == "test.yaml" {
-				if config != nil {
-					t.Fatal("only 1 test.yaml is supported")
-				}
-				config = new(testYAML)
-				if err := yaml.Unmarshal(content, config); err != nil {
-					t.Fatal(err)
-				}
 			}
 
 			if strings.HasSuffix(shortPath, ".in") {
@@ -164,21 +158,21 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		}
 		errs := singlylinkedlist.New()
 		actualExitCode := cmd.ProcessState.ExitCode()
-		if config.Expect.ExitCode != actualExitCode {
+		if ExpectedExitCode != actualExitCode {
 			errs.Add(fmt.Errorf("expected gazelle exit code: %d\ngot: %d",
-				config.Expect.ExitCode, actualExitCode,
+				ExpectedExitCode, actualExitCode,
 			))
 		}
 		actualStdout := stdout.String()
-		if strings.TrimSpace(config.Expect.Stdout) != strings.TrimSpace(actualStdout) {
+		if strings.TrimSpace(ExpectedStdout) != strings.TrimSpace(actualStdout) {
 			errs.Add(fmt.Errorf("expected gazelle stdout: %s\ngot: %s",
-				config.Expect.Stdout, actualStdout,
+				ExpectedStdout, actualStdout,
 			))
 		}
 		actualStderr := stderr.String()
-		if strings.TrimSpace(config.Expect.Stderr) != strings.TrimSpace(actualStderr) {
+		if strings.TrimSpace(ExpectedStderr) != strings.TrimSpace(actualStderr) {
 			errs.Add(fmt.Errorf("expected gazelle stderr: %s\ngot: %s",
-				config.Expect.Stderr, actualStderr,
+				ExpectedStderr, actualStderr,
 			))
 		}
 		if !errs.Empty() {
@@ -200,12 +194,4 @@ func mustFindGazelle() string {
 		panic("could not find gazelle binary")
 	}
 	return gazellePath
-}
-
-type testYAML struct {
-	Expect struct {
-		ExitCode int    `json:"exit_code"`
-		Stdout   string `json:"stdout"`
-		Stderr   string `json:"stderr"`
-	} `json:"expect"`
 }

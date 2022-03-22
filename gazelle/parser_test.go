@@ -167,19 +167,12 @@ const MyComponent : React.FC<MyComponentProps> = (props: MyComponentProps) => {
 			expected: []string{"react"},
 		},
 		{
-			// NOTE: This may not be desirable behavior, but it
-			// is what esbuild does... onResolvePlugins do not see
-			// unused imports; the parser discards them.
-			// Realistically, we shouldn't have unused imports and
-			// esbuild should be smart about them, but I could see it
-			// being confusing if you have added the line to your file
-			// and the import isn't added immediately by gazelle.
-			desc: "ignores unused imports",
+			desc: "include unused imports",
 			ts: `
-import unused from "my/unused/package";
+import "my/unused/package";
 `,
 			filename: "unusedImports.ts",
-			expected: []string{},
+			expected: []string{"my/unused/package"},
 		},
 		{
 			desc: "tsx later in file 2",

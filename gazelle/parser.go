@@ -100,6 +100,8 @@ func (p *Parser) ParseImports(filePath, source string) []FileImportInfo {
 		},
 		// Must set bundle to true so that esbuild actually does resolutions.
 		Bundle: true,
+		// Must include unused imports that would normally be tree-shacken
+		IgnoreAnnotations: true,
 	}
 	result := api.Build(options)
 

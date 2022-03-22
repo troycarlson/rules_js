@@ -55,11 +55,11 @@ func (ts *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []reso
 		}
 	}
 
+	DEBUG("PROVIDES(%q): %v", r.Name(), provides)
+
 	if len(provides) == 0 {
 		return nil
 	}
-
-	DEBUG("PROVIDES(%s): %s\n", r.Name(), provides)
 
 	return provides
 }
@@ -123,7 +123,7 @@ func ResolveModuleDeps(
 			Imp:  toWorkspaceImportPath(from.Pkg, mod.SourcePath, mod.Path),
 		}
 
-		DEBUG("FIND(%s): %s\n", from.Name, imp.Imp)
+		DEBUG("RESOLVE: %q from %q", imp.Imp, from.Name)
 
 		if override, ok := resolve.FindRuleWithOverride(c, imp, languageName); ok {
 			if override.Repo == "" {
@@ -151,7 +151,7 @@ func ResolveModuleDeps(
 				}
 			}
 
-			DEBUG("MATCHES(%s): %s\n", from.Name, filteredMatches)
+			DEBUG("MATCHES(%q): %s", from.Name, filteredMatches)
 
 			if len(filteredMatches) == 1 {
 				matchLabel := filteredMatches[0].Label.Rel(from.Repo, from.Pkg)
@@ -171,13 +171,26 @@ func ResolveModuleDeps(
 				log.Println("ERROR: ", err)
 				hasFatalError = true
 			}
-		} else if dep, ok := cfg.FindThirdPartyDependency(mod.Path); ok {
-			deps.Add(dep)
-			if EXPLAIN_DEPENDENCY == dep {
+		} else if pkg, found := cfg.GetNpmPackage(mod.Path); found {
+			deps.Add(pkg)
+			if EXPLAIN_DEPENDENCY == pkg {
 				log.Printf("Explaining dependency (%s): "+
 					"in the target %q, the file %q imports %q at line %d, "+
 					"which resolves from the third-party package %q.\n",
-					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, dep)
+					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, pkg)
+			}
+
+			// A package might also have a @types package.
+			if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); typeFound {
+				deps.Add(typePkg)
+			}
+		} else if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); typeFound {
+			deps.Add(typePkg)
+			if EXPLAIN_DEPENDENCY == typePkg {
+				log.Printf("Explaining dependency (%s): "+
+					"in the target %q, the file %q imports %q at line %d, "+
+					"which resolves from the third-party @types package %q.\n",
+					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, typePkg)
 			}
 		} else if cfg.ValidateImportStatements() {
 			err := fmt.Errorf(
@@ -191,6 +204,9 @@ func ResolveModuleDeps(
 			hasFatalError = true
 		}
 	}
+
+	DEBUG("RESOLVED(%q): %v", from.Name, deps.Values())
+
 	if hasFatalError {
 		os.Exit(1)
 	}
@@ -208,13 +224,8 @@ func toWorkspaceImportPath(pkg, src, impt string) string {
 	impt = filepath.Clean(impt)
 
 	// Trim supported TS extensions
-	ext := filepath.Ext(impt)
-	if len(ext) > 0 {
-		for _, tsExt := range typescriptSourceExtensions {
-			if ext == tsExt {
-				return strings.TrimSuffix(impt, tsExt)
-			}
-		}
+	if ext := filepath.Ext(impt); typescriptSourceExtensions.Contains(ext) {
+		impt = strings.TrimSuffix(impt, ext)
 	}
 
 	return impt

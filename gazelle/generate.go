@@ -19,10 +19,7 @@ var (
 	buildFileNames = []string{"BUILD", "BUILD.bazel"}
 
 	// Supported source file extensions
-	typescriptSourceExtensions = []string{".js", ".mjs", ".ts", ".tsx", ".jsx"}
-
-	// Additional file extensions that can be imported
-	typescriptImportExtensions = append([]string{".json"}, typescriptSourceExtensions...)
+	typescriptSourceExtensions = treeset.NewWithStringComparator(".js", ".mjs", ".ts", ".tsx", ".jsx")
 )
 
 const (
@@ -62,6 +59,8 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 
 	// TODO(jbedard): record generated non-source files (args.GenFiles, args.OtherGen, ?)
 
+	DEBUG("SOURCE(%q): %s", args.Rel, sourceFiles.Values())
+
 	// No supported files => no results
 	if sourceFiles.Empty() {
 		return language.GenerateResult{}
@@ -77,19 +76,21 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	fileIt := sourceFiles.Iterator()
 	for fileIt.Next() {
 		filePath := fileIt.Value().(string)
-		fileImports, err := parseFile(filePath)
+		if isImportingFile(filePath) {
+			fileImports, err := parseFile(filePath)
 
-		if err != nil {
-			fmt.Errorf("ReadFile(%q) error: %v", filePath, err)
-		} else {
-			for _, imprt := range fileImports {
-				DEBUG("REQUIRES(%s): %s\n", filePath, imprt.Path)
+			if err != nil {
+				fmt.Errorf("ReadFile(%q) error: %v", filePath, err)
+			} else {
+				for _, imprt := range fileImports {
+					importedFiles.Add(ImportStatement{
+						Path:             imprt.Path,
+						SourcePath:       filePath,
+						SourceLineNumber: imprt.LineNumber,
+					})
 
-				importedFiles.Add(ImportStatement{
-					Path:             imprt.Path,
-					SourcePath:       filePath,
-					SourceLineNumber: imprt.LineNumber,
-				})
+					DEBUG("IMPORT(%q): %q", filePath, imprt.Path)
+				}
 			}
 		}
 	}
@@ -133,7 +134,7 @@ func isBazelPackage(dir string) bool {
 func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs, files *treeset.Set) error {
 	// Source files
 	for _, f := range args.RegularFiles {
-		if isImportableFile(f) {
+		if isImportingFile(f) {
 			files.Add(f)
 		}
 	}
@@ -155,11 +156,6 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs, files
 						return filepath.SkipDir
 					}
 
-					return nil
-				}
-
-				// Files that don't need to be analyzed
-				if !isImportableFile(filePath) {
 					return nil
 				}
 
@@ -223,43 +219,15 @@ func checkCollisionErrors(tsProjectTargetName string, args language.GenerateArgs
 	}
 }
 
-// If the file can be imported from within typescript source
-func isImportableFile(f string) bool {
-	ext := filepath.Ext(f)
-
-	if len(ext) == 0 {
-		return false
-	}
-
-	for _, tse := range typescriptImportExtensions {
-		if ext == tse {
-			return true
-		}
-	}
-
-	return false
-}
-
 // If the file is ts-compatible source code that may contain typescript imports
-func isSourceFile(f string) bool {
-	ext := filepath.Ext(f)
-
-	if len(ext) == 0 {
-		return false
-	}
-
-	for _, tse := range typescriptSourceExtensions {
-		if ext == tse {
-			return true
-		}
-	}
-
-	return false
+func isImportingFile(f string) bool {
+	// Currently any source files may be parsed as ts and may contain imports
+	return typescriptSourceExtensions.Contains(filepath.Ext(f))
 }
 
 // Strip extensions off of a path if it can be imported without the extension
 func stripImportExtensions(f string) string {
-	if !isSourceFile(f) {
+	if !isImportingFile(f) {
 		return f
 	}
 
@@ -268,7 +236,7 @@ func stripImportExtensions(f string) string {
 
 // If the file is an index it can be imported with the directory name
 func isIndexFile(f string) bool {
-	if !isSourceFile(f) {
+	if !isImportingFile(f) {
 		return false
 	}
 

@@ -1,11 +1,14 @@
 package gazelle
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
+	"github.com/emirpasic/gods/sets/treeset"
 )
 
 type EnvironmentType string
@@ -31,6 +34,12 @@ const (
 	// EnvironmentDirective represents the runtime environment such as in a browser, node etc.
 	// and effects which native imports are available.
 	EnvironmentDirective = "ts_environment"
+	// The package.json containing third-party dependencies and the associated workspace name
+	// Examples:
+	//		npm:package.json
+	//		pkgs:sub/package.json
+	// Will generate packages under @npm or @pkgs etc.
+	NpmPackage = "ts_package_json"
 	// LibraryNamingConvention represents the directive that controls the
 	// ts_project naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
@@ -66,6 +75,8 @@ type TypeScriptConfig struct {
 
 	generationEnabled bool
 	repoRoot          string
+	npm_package_json  string
+	npm_workspace     string
 	environmentType   EnvironmentType
 
 	excludedPatterns         *singlylinkedlist.List
@@ -73,6 +84,8 @@ type TypeScriptConfig struct {
 	validateImportStatements bool
 	libraryNamingConvention  string
 	testNamingConvention     string
+
+	_npm_packages *treeset.Set
 }
 
 // New creates a new TypeScriptConfig.
@@ -83,11 +96,15 @@ func NewTypeScriptConfig(
 		generationEnabled:        true,
 		repoRoot:                 repoRoot,
 		environmentType:          EnvironmentOther,
+		npm_package_json:         "package.json",
+		npm_workspace:            "npm",
 		excludedPatterns:         singlylinkedlist.New(),
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: true,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
 		testNamingConvention:     fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+
+		_npm_packages: nil,
 	}
 }
 
@@ -104,11 +121,15 @@ func (c *TypeScriptConfig) NewChild() *TypeScriptConfig {
 		generationEnabled:        c.generationEnabled,
 		repoRoot:                 c.repoRoot,
 		environmentType:          c.environmentType,
+		npm_package_json:         c.npm_package_json,
+		npm_workspace:            c.npm_workspace,
 		excludedPatterns:         c.excludedPatterns,
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: c.validateImportStatements,
 		libraryNamingConvention:  c.libraryNamingConvention,
 		testNamingConvention:     c.testNamingConvention,
+
+		_npm_packages: c._npm_packages,
 	}
 }
 
@@ -133,9 +154,50 @@ func (c *TypeScriptConfig) GenerationEnabled() bool {
 	return c.generationEnabled
 }
 
-// FindThirdPartyDependency finds third-party dependencies which fulfill the given import path.
-func (c *TypeScriptConfig) FindThirdPartyDependency(imp string) (string, bool) {
-	// TODO(jbedard)
+func (c *TypeScriptConfig) SetNpmWorkspace(npm_workspace string) {
+	c.npm_workspace = npm_workspace
+}
+func (c *TypeScriptConfig) NpmWorkspace() string {
+	return c.npm_workspace
+}
+
+func (c *TypeScriptConfig) SetNpmPackageJSON(npm_package_json string) {
+	c._npm_packages = nil
+	c.npm_package_json = npm_package_json
+}
+func (c *TypeScriptConfig) GetNpmPackages() *treeset.Set {
+	// Parse the npm_package_json file and build the list of knowns packages
+	if c._npm_packages == nil {
+		packages, err := parsePackageJSONFile(c.npm_workspace, filepath.Join(c.repoRoot, c.npm_package_json))
+
+		if err != nil {
+			fmt.Sprintln("WARNING: ", fmt.Errorf("failed to parse package.json %s: %w", c.npm_package_json, err))
+			packages = treeset.NewWithStringComparator()
+		}
+
+		c._npm_packages = packages
+
+		DEBUG("NPM Packages(@%s): %s", c.npm_workspace, packages.Values())
+	}
+
+	return c._npm_packages
+}
+
+func (c *TypeScriptConfig) GetNpmPackagesWorkspace() string {
+	return c.npm_workspace
+}
+
+func (c *TypeScriptConfig) GetNpmPackage(imprt string) (string, bool) {
+	for pkg := imprt; len(pkg) > 0 && pkg != "."; {
+		if c.GetNpmPackages().Contains(pkg) {
+			DEBUG("GetNpmPackage: %q => %q", imprt, pkg)
+
+			return "@" + c.npm_workspace + "//" + pkg, true
+		}
+		pkg = filepath.Dir(pkg)
+	}
+
+	DEBUG("GetNpmPackage: %q => None", imprt)
 
 	return "", false
 }
@@ -211,4 +273,38 @@ func (c *TypeScriptConfig) SetTestNamingConvention(testNamingConvention string) 
 // substitutions.
 func (c *TypeScriptConfig) RenderTestName(packageName string) string {
 	return strings.ReplaceAll(c.testNamingConvention, packageNameNamingConventionSubstitution, packageName)
+}
+
+func parsePackageJSONFile(npm_workspace, npm_package_json string) (*treeset.Set, error) {
+	content, err := os.ReadFile(npm_package_json)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsePackageJSON(npm_workspace, content)
+}
+
+type NpmPackageJson struct {
+	Dependencies    map[string]string `json:"dependencies"`
+	DevDependencies map[string]string `json:"devDependencies"`
+}
+
+func parsePackageJSON(npm_workspace string, npm_package_json []byte) (*treeset.Set, error) {
+	data := NpmPackageJson{}
+
+	parseError := json.Unmarshal(npm_package_json, &data)
+	if parseError != nil {
+		return nil, parseError
+	}
+
+	pkgs := treeset.NewWithStringComparator()
+
+	for d := range data.Dependencies {
+		pkgs.Add(d)
+	}
+	for d := range data.DevDependencies {
+		pkgs.Add(d)
+	}
+
+	return pkgs, nil
 }

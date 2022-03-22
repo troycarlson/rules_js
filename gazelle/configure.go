@@ -39,6 +39,8 @@ func (ts *Configurer) KnownDirectives() []string {
 		EnvironmentDirective,
 		LibraryNamingConvention,
 		TestNamingConvention,
+		NpmPackageJson,
+		NpmWorkspace,
 	}
 }
 
@@ -105,6 +107,10 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
 		case TestNamingConvention:
 			config.SetTestNamingConvention(strings.TrimSpace(d.Value))
+		case NpmWorkspace:
+			config.SetNpmWorkspace(strings.TrimSpace(d.Value))
+		case NpmPackageJson:
+			config.SetNpmPackageJSON(strings.TrimSpace(d.Value))
 		}
 	}
 }

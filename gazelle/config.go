@@ -34,12 +34,10 @@ const (
 	// EnvironmentDirective represents the runtime environment such as in a browser, node etc.
 	// and effects which native imports are available.
 	EnvironmentDirective = "ts_environment"
-	// The package.json containing third-party dependencies and the associated workspace name
-	// Examples:
-	//		npm:package.json
-	//		pkgs:sub/package.json
-	// Will generate packages under @npm or @pkgs etc.
-	NpmPackage = "ts_package_json"
+	// The package.json containing third-party dependencies.
+	NpmPackageJson = "ts_npm_package_json"
+	// The bazel workspace name for the NpmPackage
+	NpmWorkspace = "ts_npm_package_workspace"
 	// LibraryNamingConvention represents the directive that controls the
 	// ts_project naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
@@ -284,13 +282,13 @@ func parsePackageJSONFile(npm_workspace, npm_package_json string) (*treeset.Set,
 	return parsePackageJSON(npm_workspace, content)
 }
 
-type NpmPackageJson struct {
+type NpmPackageJsonStruct struct {
 	Dependencies    map[string]string `json:"dependencies"`
 	DevDependencies map[string]string `json:"devDependencies"`
 }
 
 func parsePackageJSON(npm_workspace string, npm_package_json []byte) (*treeset.Set, error) {
-	data := NpmPackageJson{}
+	data := NpmPackageJsonStruct{}
 
 	parseError := json.Unmarshal(npm_package_json, &data)
 	if parseError != nil {

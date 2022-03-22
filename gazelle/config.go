@@ -83,7 +83,7 @@ type TypeScriptConfig struct {
 	ignoreDependencies       map[string]struct{}
 	validateImportStatements bool
 	libraryNamingConvention  string
-	testNamingConvention     string
+	testsNamingConvention    string
 
 	_npm_packages *treeset.Set
 }
@@ -102,7 +102,7 @@ func NewTypeScriptConfig(
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: true,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
-		testNamingConvention:     fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+		testsNamingConvention:    fmt.Sprintf("%s_tests", packageNameNamingConventionSubstitution),
 
 		_npm_packages: nil,
 	}
@@ -127,7 +127,7 @@ func (c *TypeScriptConfig) NewChild() *TypeScriptConfig {
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: c.validateImportStatements,
 		libraryNamingConvention:  c.libraryNamingConvention,
-		testNamingConvention:     c.testNamingConvention,
+		testsNamingConvention:    c.testsNamingConvention,
 
 		_npm_packages: c._npm_packages,
 	}
@@ -265,14 +265,14 @@ func (c *TypeScriptConfig) RenderLibraryName(packageName string) string {
 }
 
 // SetTestNamingConvention sets the ts_project test target naming convention.
-func (c *TypeScriptConfig) SetTestNamingConvention(testNamingConvention string) {
-	c.testNamingConvention = testNamingConvention
+func (c *TypeScriptConfig) SetTestNamingConvention(testsNamingConvention string) {
+	c.testsNamingConvention = testsNamingConvention
 }
 
 // RenderTestName returns the ts_project test target name by performing all
 // substitutions.
 func (c *TypeScriptConfig) RenderTestName(packageName string) string {
-	return strings.ReplaceAll(c.testNamingConvention, packageNameNamingConventionSubstitution, packageName)
+	return strings.ReplaceAll(c.testsNamingConvention, packageNameNamingConventionSubstitution, packageName)
 }
 
 func parsePackageJSONFile(npm_workspace, npm_package_json string) (*treeset.Set, error) {

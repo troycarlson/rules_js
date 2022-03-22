@@ -118,6 +118,7 @@ func ResolveModuleDeps(
 	it := modules.Iterator()
 	for it.Next() {
 		mod := it.Value().(ImportStatement)
+		isSourceTypeScript := strings.HasPrefix(filepath.Ext(mod.SourcePath), ".ts")
 		imp := resolve.ImportSpec{
 			Lang: languageName,
 			Imp:  toWorkspaceImportPath(from.Pkg, mod.SourcePath, mod.Path),
@@ -180,11 +181,11 @@ func ResolveModuleDeps(
 					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, pkg)
 			}
 
-			// A package might also have a @types package.
-			if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); typeFound {
+			// A package might also have a @types package, include it if the source file is type-checked.
+			if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); isSourceTypeScript && typeFound {
 				deps.Add(typePkg)
 			}
-		} else if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); typeFound {
+		} else if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); isSourceTypeScript && typeFound {
 			deps.Add(typePkg)
 			if EXPLAIN_DEPENDENCY == typePkg {
 				log.Printf("Explaining dependency (%s): "+

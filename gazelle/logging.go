@@ -8,6 +8,6 @@ const (
 
 func DEBUG(str string, args ...interface{}) {
 	if DEBUG_ENABLED {
-		fmt.Printf(str, args)
+		fmt.Printf(str, args...)
 	}
 }

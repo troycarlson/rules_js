@@ -36,6 +36,10 @@ def rules_js_internal_deps():
         strip_prefix = "bazel-gazelle-02d8afc45fc426314d57dbe046d7cf9f37431c14",
         # pick up https://github.com/bazelbuild/bazel-gazelle/pull/1183 and latest internal/generationtest
         urls = ["https://github.com/bazelbuild/bazel-gazelle/archive/02d8afc45fc426314d57dbe046d7cf9f37431c14.zip"],
+        patches = [
+            # See https://github.com/bazelbuild/bazel-gazelle/pull/1209
+            "//:internal/patches/rules_gazel-generation_test.bzl.patch"
+        ]
     )
 
     # Override bazel_skylib distribution to fetch sources instead

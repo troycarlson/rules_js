@@ -193,6 +193,11 @@ func ResolveModuleDeps(
 					"which resolves from the third-party @types package %q.\n",
 					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, typePkg)
 			}
+		} else if cfg.EnvironmentType() == EnvironmentNode && isNodeImport(mod.Path) {
+			// If this is a ts file importing a native node library include @types/node if it is available
+			if typePkg, typeFound := cfg.GetNpmPackage("@types/node"); isSourceTypeScript && typeFound {
+				deps.Add(typePkg)
+			}
 		} else if cfg.ValidateImportStatements() {
 			err := fmt.Errorf(
 				"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+

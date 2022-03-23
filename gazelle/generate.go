@@ -60,11 +60,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 
 	DEBUG("SOURCE(%q): %s", args.Rel, sourceFiles.Values())
 
-	// No supported files => no results
-	if sourceFiles.Empty() {
-		return language.GenerateResult{}
-	}
-
 	// If a build already exists check for name-collisions
 	if args.File != nil {
 		checkCollisionErrors(tsProjectTargetName, args)
@@ -105,9 +100,13 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	// TODO(jbedard): spec/test project, js_library?
 
 	var result language.GenerateResult
-	result.Gen = append(result.Gen, tsProject)
-	result.Imports = append(result.Imports, tsProject.PrivateAttr(config.GazelleImportsKey))
 
+	if sourceFiles.Empty() {
+		result.Empty = append(result.Empty, tsProject)
+	} else {
+		result.Gen = append(result.Gen, tsProject)
+		result.Imports = append(result.Imports, importedFiles)
+	}
 	return result
 }
 

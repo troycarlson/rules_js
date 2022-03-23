@@ -16,12 +16,6 @@ import (
 	"github.com/emirpasic/gods/sets/treeset"
 )
 
-const (
-	// resolvedDepsKey is the attribute key used to pass dependencies that don't
-	// need to be resolved by the dependency resolver in the Resolver step.
-	resolvedDepsKey = "_gazelle_ts_resolved_deps"
-)
-
 var EXPLAIN_DEPENDENCY = os.Getenv("EXPLAIN_DEPENDENCY")
 
 // Resolver satisfies the resolve.Resolver interface. It resolves dependencies
@@ -88,12 +82,6 @@ func (ts *Resolver) Resolve(
 	from label.Label,
 ) {
 	deps := treeset.NewWithStringComparator()
-
-	// Pre-resolved deps
-	resolvedDepsIt := r.PrivateAttr(resolvedDepsKey).(*treeset.Set).Iterator()
-	for resolvedDepsIt.Next() {
-		deps.Add(resolvedDepsIt.Value())
-	}
 
 	if modulesRaw != nil {
 		ResolveModuleDeps(c, ix, modulesRaw.(*treeset.Set), from, deps)

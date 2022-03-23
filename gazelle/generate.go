@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
@@ -48,11 +47,8 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		return language.GenerateResult{}
 	}
 
-	tsProjectTargetName := cfg.RenderLibraryName(filepath.Base(args.Dir))
-
-	sourceFiles := treeset.NewWithStringComparator()
-
-	collectErr := collectSourceFiles(cfg, args, sourceFiles)
+	// Collect all source files
+	sourceFiles, collectErr := collectSourceFiles(cfg, args)
 	if collectErr != nil {
 		log.Printf("ERROR: %v\n", collectErr)
 		return language.GenerateResult{}
@@ -60,11 +56,26 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 
 	DEBUG("SOURCE(%q): %s", args.Rel, sourceFiles.Values())
 
+	// Build the GenerateResult with src and test rules
+	var result language.GenerateResult
+
+	addProjectRule(
+		args,
+		cfg.RenderLibraryName(filepath.Base(args.Dir)),
+		sourceFiles,
+		&result,
+	)
+
+	return result
+}
+
+func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *treeset.Set, result *language.GenerateResult) {
 	// If a build already exists check for name-collisions
 	if args.File != nil {
-		checkCollisionErrors(tsProjectTargetName, args)
+		checkCollisionErrors(targetName, args)
 	}
 
+	// Collect import statements from source
 	importedFiles := treeset.NewWith(importStatementComparator)
 
 	fileIt := sourceFiles.Iterator()
@@ -89,17 +100,10 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 	}
 
-	tsProject := rule.NewRule(tsProjectKind, tsProjectTargetName)
-	if !sourceFiles.Empty() {
-		tsProject.SetAttr("srcs", sourceFiles.Values())
-	}
-	if !importedFiles.Empty() {
-		tsProject.SetPrivateAttr(config.GazelleImportsKey, importedFiles)
-	}
+	tsProject := rule.NewRule(tsProjectKind, targetName)
+	tsProject.SetAttr("srcs", sourceFiles.Values())
 
 	// TODO(jbedard): spec/test project, js_library?
-
-	var result language.GenerateResult
 
 	if sourceFiles.Empty() {
 		result.Empty = append(result.Empty, tsProject)
@@ -107,7 +111,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		result.Gen = append(result.Gen, tsProject)
 		result.Imports = append(result.Imports, importedFiles)
 	}
-	return result
 }
 
 // Parse the passed file for import statements
@@ -132,7 +135,9 @@ func isBazelPackage(dir string) bool {
 	return false
 }
 
-func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs, files *treeset.Set) error {
+func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*treeset.Set, error) {
+	files := treeset.NewWithStringComparator()
+
 	excludedPatterns := cfg.ExcludedPatterns()
 
 	// Source files
@@ -190,11 +195,11 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs, files
 
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return files, nil
 }
 
 // Check if a target with the same name we are generating alredy exists,

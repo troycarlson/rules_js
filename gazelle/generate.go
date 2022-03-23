@@ -57,8 +57,6 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		return language.GenerateResult{}
 	}
 
-	// TODO(jbedard): record generated non-source files (args.GenFiles, args.OtherGen, ?)
-
 	DEBUG("SOURCE(%q): %s", args.Rel, sourceFiles.Values())
 
 	// No supported files => no results
@@ -132,12 +130,16 @@ func isBazelPackage(dir string) bool {
 }
 
 func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs, files *treeset.Set) error {
+	excludedPatterns := cfg.ExcludedPatterns()
+
 	// Source files
 	for _, f := range args.RegularFiles {
 		if isImportingFile(f) {
 			files.Add(f)
 		}
 	}
+
+	// TODO(jbedard): record generated non-source files (args.GenFiles, args.OtherGen, ?)
 
 	// Sub-Directory files
 	// Find source files throughout the sub-directories of this BUILD.
@@ -162,7 +164,6 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs, files
 				// Excxluded files. Must be done manually on Subdirs unlike
 				// the BUILD directory which gazell filters automatically.
 				f, _ := filepath.Rel(args.Dir, filePath)
-				excludedPatterns := cfg.ExcludedPatterns()
 				if excludedPatterns != nil {
 					it := excludedPatterns.Iterator()
 					for it.Next() {

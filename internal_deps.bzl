@@ -32,14 +32,13 @@ def rules_js_internal_deps():
     maybe(
         http_archive,
         name = "bazel_gazelle",
-        sha256 = "1d9bd703f3442421b12b6e70081c69a8b1eb7e46447577523c810931b25cff61",
-        strip_prefix = "bazel-gazelle-02d8afc45fc426314d57dbe046d7cf9f37431c14",
-        # pick up https://github.com/bazelbuild/bazel-gazelle/pull/1183 and latest internal/generationtest
-        urls = ["https://github.com/bazelbuild/bazel-gazelle/archive/02d8afc45fc426314d57dbe046d7cf9f37431c14.zip"],
-        patches = [
-            # See https://github.com/bazelbuild/bazel-gazelle/pull/1209
-            "//:internal/patches/rules_gazel-generation_test.bzl.patch"
-        ]
+        sha256 = "81ed9ebed012e89b8d7e7574b1d5e39b1ae71e1cd52c7be97a30eb0fb8b23a35",
+        strip_prefix = "bazel-gazelle-f4134b0d879f71ad01212e502d2b6996d9e180aa",
+        # Use latest to include:
+        #  https://github.com/bazelbuild/bazel-gazelle/pull/1183
+        #  https://github.com/bazelbuild/bazel-gazelle/pull/1209
+        #  internal/generationtest
+        urls = ["https://github.com/bazelbuild/bazel-gazelle/archive/f4134b0d879f71ad01212e502d2b6996d9e180aa.zip"],
     )
 
     # Override bazel_skylib distribution to fetch sources instead

@@ -9,6 +9,7 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
+	"github.com/bazelbuild/bazel-gazelle/rule"
 	"github.com/bmatcuk/doublestar"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
@@ -93,10 +94,13 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		}
 	}
 
-	tsProject := newTargetBuilder(tsProjectKind, tsProjectTargetName, args.Rel).
-		addSrcs(sourceFiles).
-		addDependencies(importedFiles).
-		build()
+	tsProject := rule.NewRule(tsProjectKind, tsProjectTargetName)
+	if !sourceFiles.Empty() {
+		tsProject.SetAttr("srcs", sourceFiles.Values())
+	}
+	if !importedFiles.Empty() {
+		tsProject.SetPrivateAttr(config.GazelleImportsKey, importedFiles)
+	}
 
 	// TODO(jbedard): spec/test project, js_library?
 

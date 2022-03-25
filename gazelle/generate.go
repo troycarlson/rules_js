@@ -75,6 +75,11 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 		checkCollisionErrors(targetName, args)
 	}
 
+	// Generate nothing if there are no source files
+	if sourceFiles.Empty() {
+		return
+	}
+
 	// Collect import statements from source
 	importedFiles := treeset.NewWith(importStatementComparator)
 

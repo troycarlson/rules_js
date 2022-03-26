@@ -87,6 +87,8 @@ func (ts *Resolver) Resolve(
 		ResolveModuleDeps(c, ix, modulesRaw.(*treeset.Set), from, deps)
 	}
 
+	DEBUG("RESOLVED(%s): %s", from.Name, deps.Values())
+
 	if !deps.Empty() {
 		r.SetAttr("deps", convertDependencySetToExpr(deps))
 	}
@@ -99,6 +101,8 @@ func ResolveModuleDeps(
 	from label.Label,
 	deps *treeset.Set,
 ) {
+	DEBUG("ResolveModuleDeps(%s): modules(%s) deps(%s)", from.Name, modules.Values(), deps.Values())
+
 	cfgs := c.Exts[languageName].(Configs)
 	cfg := cfgs[from.Pkg]
 	hasFatalError := false
@@ -198,8 +202,6 @@ func ResolveModuleDeps(
 			hasFatalError = true
 		}
 	}
-
-	DEBUG("RESOLVED(%q): %v", from.Name, deps.Values())
 
 	if hasFatalError {
 		os.Exit(1)

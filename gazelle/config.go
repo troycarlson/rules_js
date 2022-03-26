@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bmatcuk/doublestar"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 )
@@ -43,10 +44,12 @@ const (
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
 	// to `$package_name$_my_lib` would render to `foo_my_lib`.
 	LibraryNamingConvention = "ts_project_naming_convention"
-	// TestNamingConvention represents the directive that controls the ts_project test
+	// TestsNamingConvention represents the directive that controls the ts_project test
 	// naming convention. See ts_project_naming_convention for more info on
 	// the package name interpolation.
-	TestNamingConvention = "ts_test_naming_convention"
+	TestsNamingConvention = "ts_tests_naming_convention"
+	// The naming of test files
+	TestsFileGlob = "ts_tests_file_glob"
 )
 
 const (
@@ -82,6 +85,7 @@ type TypeScriptConfig struct {
 	validateImportStatements bool
 	libraryNamingConvention  string
 	testsNamingConvention    string
+	testsFileGlob            string
 
 	_npm_packages *treeset.Set
 }
@@ -101,6 +105,7 @@ func NewTypeScriptConfig(
 		validateImportStatements: true,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
 		testsNamingConvention:    fmt.Sprintf("%s_tests", packageNameNamingConventionSubstitution),
+		testsFileGlob:            "**/*.spec.ts", // TODO(jbedard): support .tsx, .js etc.
 
 		_npm_packages: nil,
 	}
@@ -126,6 +131,7 @@ func (c *TypeScriptConfig) NewChild() *TypeScriptConfig {
 		validateImportStatements: c.validateImportStatements,
 		libraryNamingConvention:  c.libraryNamingConvention,
 		testsNamingConvention:    c.testsNamingConvention,
+		testsFileGlob:            c.testsFileGlob,
 
 		_npm_packages: c._npm_packages,
 	}
@@ -262,15 +268,33 @@ func (c *TypeScriptConfig) RenderLibraryName(packageName string) string {
 	return strings.ReplaceAll(c.libraryNamingConvention, packageNameNamingConventionSubstitution, packageName)
 }
 
-// SetTestNamingConvention sets the ts_project test target naming convention.
-func (c *TypeScriptConfig) SetTestNamingConvention(testsNamingConvention string) {
+// SetTestsNamingLibraryConvention sets the ts_project test target naming convention.
+func (c *TypeScriptConfig) SetTestsNamingLibraryConvention(testsNamingConvention string) {
 	c.testsNamingConvention = testsNamingConvention
 }
 
 // RenderTestName returns the ts_project test target name by performing all
 // substitutions.
-func (c *TypeScriptConfig) RenderTestName(packageName string) string {
+func (c *TypeScriptConfig) RenderTestsLibraryName(packageName string) string {
 	return strings.ReplaceAll(c.testsNamingConvention, packageNameNamingConventionSubstitution, packageName)
+}
+
+func (c *TypeScriptConfig) SetTestFileGlob(testsFileGlob string) {
+	c.testsFileGlob = testsFileGlob
+}
+func (c *TypeScriptConfig) IsTestFile(filePath string) bool {
+	if c.testsFileGlob == "" {
+		return false
+	}
+
+	m, e := doublestar.Match(c.testsFileGlob, filePath)
+
+	if e != nil {
+		fmt.Println("ERROR: ", fmt.Errorf("tests file glob error %e", e))
+		return false
+	}
+
+	return m
 }
 
 func parsePackageJSONFile(npm_workspace, npm_package_json string) (*treeset.Set, error) {

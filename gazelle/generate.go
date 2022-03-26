@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
@@ -56,13 +57,33 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 
 	DEBUG("SOURCE(%q): %s", args.Rel, sourceFiles.Values())
 
+	// Divide src vs test files
+	libSourceFiles := treeset.NewWithStringComparator()
+	testSourceFiles := treeset.NewWithStringComparator()
+
+	for _, f := range sourceFiles.Values() {
+		file := f.(string)
+		if cfg.IsTestFile(file) {
+			testSourceFiles.Add(file)
+		} else {
+			libSourceFiles.Add(file)
+		}
+	}
+
 	// Build the GenerateResult with src and test rules
 	var result language.GenerateResult
 
 	addProjectRule(
 		args,
 		cfg.RenderLibraryName(filepath.Base(args.Dir)),
-		sourceFiles,
+		libSourceFiles,
+		&result,
+	)
+
+	addProjectRule(
+		args,
+		cfg.RenderTestsLibraryName(filepath.Base(args.Dir)),
+		testSourceFiles,
 		&result,
 	)
 
@@ -83,6 +104,7 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 	// Collect import statements from source
 	importedFiles := treeset.NewWith(importStatementComparator)
 
+	// TODO(jbedard): parse files concurrently
 	fileIt := sourceFiles.Iterator()
 	for fileIt.Next() {
 		filePath := fileIt.Value().(string)
@@ -107,15 +129,10 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 
 	tsProject := rule.NewRule(tsProjectKind, targetName)
 	tsProject.SetAttr("srcs", sourceFiles.Values())
+	tsProject.SetPrivateAttr(config.GazelleImportsKey, importedFiles)
 
-	// TODO(jbedard): spec/test project, js_library?
-
-	if sourceFiles.Empty() {
-		result.Empty = append(result.Empty, tsProject)
-	} else {
-		result.Gen = append(result.Gen, tsProject)
-		result.Imports = append(result.Imports, importedFiles)
-	}
+	result.Gen = append(result.Gen, tsProject)
+	result.Imports = append(result.Imports, importedFiles)
 }
 
 // Parse the passed file for import statements
@@ -142,7 +159,6 @@ func isBazelPackage(dir string) bool {
 
 func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*treeset.Set, error) {
 	files := treeset.NewWithStringComparator()
-
 	excludedPatterns := cfg.ExcludedPatterns()
 
 	// Source files

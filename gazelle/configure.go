@@ -38,7 +38,8 @@ func (ts *Configurer) KnownDirectives() []string {
 		ValidateImportStatementsDirective,
 		EnvironmentDirective,
 		LibraryNamingConvention,
-		TestNamingConvention,
+		TestsNamingConvention,
+		TestsFileGlob,
 		NpmPackageJson,
 		NpmWorkspace,
 	}
@@ -105,8 +106,10 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			config.SetEnvironmentType(EnvironmentType(strings.TrimSpace(d.Value)))
 		case LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
-		case TestNamingConvention:
-			config.SetTestNamingConvention(strings.TrimSpace(d.Value))
+		case TestsNamingConvention:
+			config.SetTestsNamingLibraryConvention(strings.TrimSpace(d.Value))
+		case TestsFileGlob:
+			config.SetTestFileGlob(strings.TrimSpace(d.Value))
 		case NpmWorkspace:
 			config.SetNpmWorkspace(strings.TrimSpace(d.Value))
 		case NpmPackageJson:

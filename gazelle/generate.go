@@ -87,10 +87,10 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 	for fileIt.Next() {
 		filePath := fileIt.Value().(string)
 		if isImportingFile(filePath) {
-			fileImports, err := parseFile(filePath)
+			fileImports, err := parseFile(filepath.Join(args.Dir, filePath))
 
 			if err != nil {
-				fmt.Errorf("ReadFile(%q) error: %v", filePath, err)
+				fmt.Println("Parse Error:", fmt.Errorf("%q: %v", filePath, err))
 			} else {
 				for _, imprt := range fileImports {
 					importedFiles.Add(ImportStatement{

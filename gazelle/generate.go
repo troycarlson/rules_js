@@ -108,7 +108,7 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 	fileIt := sourceFiles.Iterator()
 	for fileIt.Next() {
 		filePath := fileIt.Value().(string)
-		if isImportingFile(filePath) {
+		if isSourceFile(filePath) {
 			fileImports, err := parseFile(filepath.Join(args.Dir, filePath))
 
 			if err != nil {
@@ -163,7 +163,7 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 
 	// Source files
 	for _, f := range args.RegularFiles {
-		if isImportingFile(f) {
+		if isSourceFile(f) {
 			sourceFiles.Add(f)
 		}
 	}
@@ -208,7 +208,7 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 				}
 
 				// Otherwise the file is either source or potentially importable
-				if isImportingFile(f) {
+				if isSourceFile(f) {
 					sourceFiles.Add(f)
 				}
 
@@ -252,14 +252,14 @@ func checkCollisionErrors(tsProjectTargetName string, args language.GenerateArgs
 }
 
 // If the file is ts-compatible source code that may contain typescript imports
-func isImportingFile(f string) bool {
+func isSourceFile(f string) bool {
 	// Currently any source files may be parsed as ts and may contain imports
 	return typescriptSourceExtensions.Contains(filepath.Ext(f))
 }
 
 // Strip extensions off of a path if it can be imported without the extension
 func stripImportExtensions(f string) string {
-	if !isImportingFile(f) {
+	if !isSourceFile(f) {
 		return f
 	}
 
@@ -268,7 +268,7 @@ func stripImportExtensions(f string) string {
 
 // If the file is an index it can be imported with the directory name
 func isIndexFile(f string) bool {
-	if !isImportingFile(f) {
+	if !isSourceFile(f) {
 		return false
 	}
 

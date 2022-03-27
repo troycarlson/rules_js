@@ -207,8 +207,10 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 					}
 				}
 
-				// Otherwise the file must be parsed for importedFiles
-				files.Add(f)
+				// Otherwise the file is either source or potentially importable
+				if isImportingFile(f) {
+					files.Add(f)
+				}
 
 				return nil
 			},

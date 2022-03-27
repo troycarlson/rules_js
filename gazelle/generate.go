@@ -158,13 +158,13 @@ func isBazelPackage(dir string) bool {
 }
 
 func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*treeset.Set, error) {
-	files := treeset.NewWithStringComparator()
+	sourceFiles := treeset.NewWithStringComparator()
 	excludedPatterns := cfg.ExcludedPatterns()
 
 	// Source files
 	for _, f := range args.RegularFiles {
 		if isImportingFile(f) {
-			files.Add(f)
+			sourceFiles.Add(f)
 		}
 	}
 
@@ -209,7 +209,7 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 
 				// Otherwise the file is either source or potentially importable
 				if isImportingFile(f) {
-					files.Add(f)
+					sourceFiles.Add(f)
 				}
 
 				return nil
@@ -222,7 +222,7 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 		}
 	}
 
-	return files, nil
+	return sourceFiles, nil
 }
 
 // Check if a target with the same name we are generating alredy exists,

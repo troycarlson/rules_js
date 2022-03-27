@@ -105,24 +105,22 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 	importedFiles := treeset.NewWith(importStatementComparator)
 
 	// TODO(jbedard): parse files concurrently
-	fileIt := sourceFiles.Iterator()
-	for fileIt.Next() {
-		filePath := fileIt.Value().(string)
-		if isSourceFile(filePath) {
-			fileImports, err := parseFile(filepath.Join(args.Dir, filePath))
+	sourceFileIt := sourceFiles.Iterator()
+	for sourceFileIt.Next() {
+		filePath := sourceFileIt.Value().(string)
+		fileImports, err := parseFile(filepath.Join(args.Dir, filePath))
 
-			if err != nil {
-				fmt.Println("Parse Error:", fmt.Errorf("%q: %v", filePath, err))
-			} else {
-				for _, imprt := range fileImports {
-					importedFiles.Add(ImportStatement{
-						Path:             imprt.Path,
-						SourcePath:       filePath,
-						SourceLineNumber: imprt.LineNumber,
-					})
+		if err != nil {
+			fmt.Println("Parse Error:", fmt.Errorf("%q: %v", filePath, err))
+		} else {
+			for _, imprt := range fileImports {
+				importedFiles.Add(ImportStatement{
+					Path:             imprt.Path,
+					SourcePath:       filePath,
+					SourceLineNumber: imprt.LineNumber,
+				})
 
-					DEBUG("IMPORT(%q): %q", filePath, imprt.Path)
-				}
+				DEBUG("IMPORT(%q): %q", filePath, imprt.Path)
 			}
 		}
 	}

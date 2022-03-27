@@ -21,6 +21,9 @@ var (
 
 	// Supported source file extensions
 	typescriptSourceExtensions = treeset.NewWithStringComparator(".js", ".mjs", ".ts", ".tsx", ".jsx")
+
+	// Supported data file extensions that typescript can reference
+	typescriptDataExtensions = treeset.NewWithStringComparator(".json")
 )
 
 const (
@@ -49,7 +52,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	}
 
 	// Collect all source files
-	sourceFiles, collectErr := collectSourceFiles(cfg, args)
+	sourceFiles, dataFiles, collectErr := collectSourceFiles(cfg, args)
 	if collectErr != nil {
 		log.Printf("ERROR: %v\n", collectErr)
 		return language.GenerateResult{}
@@ -77,6 +80,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		args,
 		cfg.RenderLibraryName(filepath.Base(args.Dir)),
 		libSourceFiles,
+		dataFiles,
 		&result,
 	)
 
@@ -84,13 +88,14 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		args,
 		cfg.RenderTestsLibraryName(filepath.Base(args.Dir)),
 		testSourceFiles,
+		dataFiles,
 		&result,
 	)
 
 	return result
 }
 
-func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *treeset.Set, result *language.GenerateResult) {
+func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles, dataFiles *treeset.Set, result *language.GenerateResult) {
 	// If a build already exists check for name-collisions
 	if args.File != nil {
 		checkCollisionErrors(targetName, args)
@@ -100,6 +105,9 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 	if sourceFiles.Empty() {
 		return
 	}
+
+	// Data files imported by sourceFiles
+	sourceDataFiles := treeset.NewWithStringComparator()
 
 	// Collect import statements from source
 	importedFiles := treeset.NewWith(importStatementComparator)
@@ -114,16 +122,27 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles *
 			fmt.Println("Parse Error:", fmt.Errorf("%q: %v", filePath, err))
 		} else {
 			for _, imprt := range fileImports {
-				importedFiles.Add(ImportStatement{
-					Path:             imprt.Path,
-					SourcePath:       filePath,
-					SourceLineNumber: imprt.LineNumber,
-				})
+				importPath := filepath.Clean(imprt.Path)
 
-				DEBUG("IMPORT(%q): %q", filePath, imprt.Path)
+				// If importing a local data file that can be compiled as ts source
+				// then add it to the sourceDataFiles to be included in the srcs
+				if dataFiles.Contains(importPath) {
+					sourceDataFiles.Add(importPath)
+				} else {
+					importedFiles.Add(ImportStatement{
+						Path:             importPath,
+						SourcePath:       filePath,
+						SourceLineNumber: imprt.LineNumber,
+					})
+				}
+
+				DEBUG("IMPORT(%q): %q", filePath, importPath)
 			}
 		}
 	}
+
+	// Add any imported data files as sources
+	sourceFiles.Add(sourceDataFiles.Values()...)
 
 	tsProject := rule.NewRule(tsProjectKind, targetName)
 	tsProject.SetAttr("srcs", sourceFiles.Values())
@@ -155,14 +174,17 @@ func isBazelPackage(dir string) bool {
 	return false
 }
 
-func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*treeset.Set, error) {
+func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*treeset.Set, *treeset.Set, error) {
 	sourceFiles := treeset.NewWithStringComparator()
+	dataFiles := treeset.NewWithStringComparator()
 	excludedPatterns := cfg.ExcludedPatterns()
 
 	// Source files
 	for _, f := range args.RegularFiles {
 		if isSourceFile(f) {
 			sourceFiles.Add(f)
+		} else if isDataFile(f) {
+			dataFiles.Add(f)
 		}
 	}
 
@@ -208,6 +230,8 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 				// Otherwise the file is either source or potentially importable
 				if isSourceFile(f) {
 					sourceFiles.Add(f)
+				} else if isDataFile(f) {
+					dataFiles.Add(f)
 				}
 
 				return nil
@@ -216,11 +240,11 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
-	return sourceFiles, nil
+	return sourceFiles, dataFiles, nil
 }
 
 // Check if a target with the same name we are generating alredy exists,
@@ -253,6 +277,10 @@ func checkCollisionErrors(tsProjectTargetName string, args language.GenerateArgs
 func isSourceFile(f string) bool {
 	// Currently any source files may be parsed as ts and may contain imports
 	return typescriptSourceExtensions.Contains(filepath.Ext(f))
+}
+
+func isDataFile(f string) bool {
+	return typescriptDataExtensions.Contains(filepath.Ext(f))
 }
 
 // Strip extensions off of a path if it can be imported without the extension

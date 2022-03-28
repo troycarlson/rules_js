@@ -10,6 +10,7 @@ ts_project(
         "typed.tsx",
     ],
     deps = [
+        "@npm//@types/typed-js",
         "@npm//@types/typed-ts",
         "@npm//@types/typed-tsx",
         "@npm//typed-js",

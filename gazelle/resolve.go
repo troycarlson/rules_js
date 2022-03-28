@@ -106,7 +106,6 @@ func (ts *TypeScript) ResolveModuleDeps(
 	it := modules.Iterator()
 	for it.Next() {
 		mod := it.Value().(ImportStatement)
-		isSourceTypeScript := strings.HasPrefix(filepath.Ext(mod.SourcePath), ".ts")
 		imp := resolve.ImportSpec{
 			Lang: languageName,
 			Imp:  toWorkspaceImportPath(from.Pkg, mod.SourcePath, mod.Path),
@@ -179,10 +178,10 @@ func (ts *TypeScript) ResolveModuleDeps(
 			}
 
 			// A package might also have a @types package, include it if the source file is type-checked.
-			if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); isSourceTypeScript && typeFound {
+			if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); typeFound {
 				deps.Add(typePkg)
 			}
-		} else if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); isSourceTypeScript && typeFound {
+		} else if typePkg, typeFound := cfg.GetNpmPackage("@types/" + mod.Path); typeFound {
 			deps.Add(typePkg)
 			if EXPLAIN_DEPENDENCY == typePkg {
 				log.Printf("Explaining dependency (%s): "+
@@ -192,7 +191,7 @@ func (ts *TypeScript) ResolveModuleDeps(
 			}
 		} else if cfg.EnvironmentType() == EnvironmentNode && isNodeImport(mod.Path) {
 			// If this is a ts file importing a native node library include @types/node if it is available
-			if typePkg, typeFound := cfg.GetNpmPackage("@types/node"); isSourceTypeScript && typeFound {
+			if typePkg, typeFound := cfg.GetNpmPackage("@types/node"); typeFound {
 				deps.Add(typePkg)
 			}
 		} else if cfg.ValidateImportStatements() {

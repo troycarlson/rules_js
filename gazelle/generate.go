@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
@@ -146,7 +145,6 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles, 
 
 	tsProject := rule.NewRule(tsProjectKind, targetName)
 	tsProject.SetAttr("srcs", sourceFiles.Values())
-	tsProject.SetPrivateAttr(config.GazelleImportsKey, importedFiles)
 
 	result.Gen = append(result.Gen, tsProject)
 	result.Imports = append(result.Imports, importedFiles)

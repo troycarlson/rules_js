@@ -269,7 +269,7 @@ func checkCollisionErrors(tsProjectTargetName string, args language.GenerateArgs
 			fqTarget := label.New("", args.Rel, tsProjectTargetName)
 			err := fmt.Errorf("failed to generate target %q of kind %q: "+
 				"a target of kind %q with the same name already exists. "+
-				"Use the '# gazelle:%s' directive to change the naming convention.",
+				"Use the '// gazelle:%s' directive to change the naming convention.",
 				fqTarget.String(), tsProjectKind, t.Kind(), LibraryNamingConvention)
 			collisionErrors.Add(err)
 		}

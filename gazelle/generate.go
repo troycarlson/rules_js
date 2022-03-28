@@ -30,6 +30,27 @@ const (
 	indexFileName = "index"
 )
 
+func (c *TypeScript) GetNamedPackage(imprt string) (string, bool) {
+	for pkg := imprt; len(pkg) > 0 && pkg != "."; {
+		if target := c.Packages[pkg]; target != "" {
+			return target, true
+		}
+		pkg = filepath.Dir(pkg)
+	}
+
+	return "", false
+}
+
+func (ts *TypeScript) CollectNamedPackages(ruleDir string, rules []*rule.Rule) {
+	for _, r := range rules {
+		if r.Kind() == "js_library" {
+			if pkg := r.AttrString("package_name"); pkg != "" {
+				ts.Packages[pkg] = "//" + ruleDir + ":" + r.Name()
+			}
+		}
+	}
+}
+
 // GenerateRules extracts build metadata from source files in a directory.
 // GenerateRules is called in each directory where an update is requested
 // in depth-first post-order.
@@ -49,6 +70,9 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	if !isBazelPackage(args.Dir) {
 		return language.GenerateResult{}
 	}
+
+	// Collect named modules from this target
+	ts.CollectNamedPackages(args.Rel, args.File.Rules)
 
 	// Collect all source files
 	sourceFiles, dataFiles, collectErr := collectSourceFiles(cfg, args)

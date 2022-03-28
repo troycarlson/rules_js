@@ -225,8 +225,8 @@ func toWorkspaceImportPath(pkg, src, impt string) string {
 	impt = filepath.Clean(impt)
 
 	// Trim supported TS extensions
-	if ext := filepath.Ext(impt); sourceFileExtensions.Contains(ext) {
-		impt = strings.TrimSuffix(impt, ext)
+	if isSourceFile(impt) {
+		impt = strings.TrimSuffix(impt, filepath.Ext(impt))
 	}
 
 	return impt

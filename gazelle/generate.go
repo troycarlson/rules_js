@@ -19,10 +19,10 @@ var (
 	buildFileNames = []string{"BUILD", "BUILD.bazel"}
 
 	// Supported source file extensions
-	sourceFileExtensions = treeset.NewWithStringComparator(".js", ".mjs", ".ts", ".tsx", ".jsx")
+	sourceFileExtensions = treeset.NewWithStringComparator("js", "mjs", "ts", "tsx", "jsx")
 
 	// Supported data file extensions that typescript can reference
-	dataFileExtensions = treeset.NewWithStringComparator(".json")
+	dataFileExtensions = treeset.NewWithStringComparator("json")
 )
 
 const (
@@ -297,12 +297,15 @@ func checkCollisionErrors(tsProjectTargetName string, args language.GenerateArgs
 
 // If the file is ts-compatible source code that may contain typescript imports
 func isSourceFile(f string) bool {
+	ext := filepath.Ext(f)
+
 	// Currently any source files may be parsed as ts and may contain imports
-	return sourceFileExtensions.Contains(filepath.Ext(f))
+	return len(ext) > 0 && sourceFileExtensions.Contains(ext[1:])
 }
 
 func isDataFile(f string) bool {
-	return dataFileExtensions.Contains(filepath.Ext(f))
+	ext := filepath.Ext(f)
+	return len(ext) > 0 && dataFileExtensions.Contains(ext[1:])
 }
 
 // Strip extensions off of a path if it can be imported without the extension

@@ -14,17 +14,6 @@ import (
 	"github.com/emirpasic/gods/sets/treeset"
 )
 
-var (
-	// BUILD file names
-	buildFileNames = []string{"BUILD", "BUILD.bazel"}
-
-	// Supported source file extensions
-	sourceFileExtensions = treeset.NewWithStringComparator("js", "mjs", "ts", "tsx", "jsx")
-
-	// Supported data file extensions that typescript can reference
-	dataFileExtensions = treeset.NewWithStringComparator("json")
-)
-
 const (
 	// The filename (with any of the TS extensions) imported when importing a directory
 	indexFileName = "index"
@@ -91,7 +80,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 		file := f.(string)
 		if cfg.IsTestFile(file) {
 			testSourceFiles.Add(file)
-		} else {
+		} else if cfg.IsSourceFile(file) {
 			libSourceFiles.Add(file)
 		}
 	}

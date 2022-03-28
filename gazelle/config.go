@@ -48,12 +48,28 @@ const (
 	// naming convention. See ts_project_naming_convention for more info on
 	// the package name interpolation.
 	TestsNamingConvention = "ts_tests_naming_convention"
-	// The naming of test files
+	// The glob for source files, excludes files matching TestsFileGlob
+	SourcesFileGlob = "ts_srcs_file_glob"
+	// The glob for test files
 	TestsFileGlob = "ts_tests_file_glob"
 )
 
 const (
 	packageNameNamingConventionSubstitution = "$package_name$"
+)
+
+var (
+	// BUILD file names
+	buildFileNames = []string{"BUILD", "BUILD.bazel"}
+
+	// Set of supported source file extensions
+	sourceFileExtensions = treeset.NewWithStringComparator("js", "mjs", "ts", "tsx", "jsx")
+
+	// Array of sourceFileExtensions
+	sourceFileExtensionsArray = []string{"js", "mjs", "ts", "tsx", "jsx"}
+
+	// Supported data file extensions that typescript can reference
+	dataFileExtensions = treeset.NewWithStringComparator("json")
 )
 
 // Configs is an extension of map[string]*TypeScriptConfig. It provides finding methods
@@ -85,6 +101,7 @@ type TypeScriptConfig struct {
 	validateImportStatements bool
 	libraryNamingConvention  string
 	testsNamingConvention    string
+	srcsFileGlob             string
 	testsFileGlob            string
 
 	_npm_packages *treeset.Set
@@ -105,7 +122,8 @@ func NewTypeScriptConfig(
 		validateImportStatements: true,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
 		testsNamingConvention:    fmt.Sprintf("%s_tests", packageNameNamingConventionSubstitution),
-		testsFileGlob:            "**/*.spec.ts", // TODO(jbedard): support .tsx, .js etc.
+		srcsFileGlob:             fmt.Sprintf("**/*.{%s}", strings.Join(sourceFileExtensionsArray, ",")),
+		testsFileGlob:            fmt.Sprintf("**/*.spec.{%s}", strings.Join(sourceFileExtensionsArray, ",")),
 
 		_npm_packages: nil,
 	}
@@ -130,6 +148,7 @@ func (c *TypeScriptConfig) NewChild() *TypeScriptConfig {
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: c.validateImportStatements,
 		libraryNamingConvention:  c.libraryNamingConvention,
+		srcsFileGlob:             c.srcsFileGlob,
 		testsNamingConvention:    c.testsNamingConvention,
 		testsFileGlob:            c.testsFileGlob,
 
@@ -279,10 +298,34 @@ func (c *TypeScriptConfig) RenderTestsLibraryName(packageName string) string {
 	return strings.ReplaceAll(c.testsNamingConvention, packageNameNamingConventionSubstitution, packageName)
 }
 
+func (c *TypeScriptConfig) SetSourceFileGlob(srcsFileGlob string) {
+	c.srcsFileGlob = srcsFileGlob
+}
+func (c *TypeScriptConfig) IsSourceFile(filePath string) bool {
+	if !isSourceFile(filePath) {
+		return false
+	}
+	if c.srcsFileGlob == "" {
+		return true
+	}
+
+	m, e := doublestar.Match(c.srcsFileGlob, filePath)
+
+	if e != nil {
+		fmt.Println("ERROR: ", fmt.Errorf("srcs file glob error %e", e))
+		return false
+	}
+
+	return m
+}
+
 func (c *TypeScriptConfig) SetTestFileGlob(testsFileGlob string) {
 	c.testsFileGlob = testsFileGlob
 }
 func (c *TypeScriptConfig) IsTestFile(filePath string) bool {
+	if !isSourceFile(filePath) {
+		return false
+	}
 	if c.testsFileGlob == "" {
 		return false
 	}

@@ -225,7 +225,7 @@ func toWorkspaceImportPath(pkg, src, impt string) string {
 	impt = filepath.Clean(impt)
 
 	// Trim supported TS extensions
-	if ext := filepath.Ext(impt); typescriptSourceExtensions.Contains(ext) {
+	if ext := filepath.Ext(impt); sourceFileExtensions.Contains(ext) {
 		impt = strings.TrimSuffix(impt, ext)
 	}
 

@@ -196,13 +196,12 @@ func (ts *TypeScript) ResolveModuleDeps(
 			}
 		} else if cfg.ValidateImportStatements() {
 			err := fmt.Errorf(
-				"%[1]q from %[2]q is an invalid dependency: possible solutions:\n"+
-					"\t1. Add it as a dependency in the requirements.txt file.\n"+
-					"\t2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
-					"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the TypeScript file.\n",
-				mod.Path, mod.SourcePath,
+				"Import %[1]q from %[2]q is an unknown dependency. Possible solutions:\n"+
+					"\t1. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
+					"\t2. Ignore the dependency with a comment '# gazelle:%[3]s %[1]s' in the BUILD file",
+				mod.Path, mod.SourcePath, IgnoreImportsDirective,
 			)
-			log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), err)
+			log.Printf("ERROR: Failed to validate dependencies for target %q. %v", from.String(), err)
 			hasFatalError = true
 		}
 	}

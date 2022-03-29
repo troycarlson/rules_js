@@ -11,12 +11,12 @@ js_library(
 )
 
 ts_project(
-    name = "_simple_rule_naming",
+    name = "_simple_rule_naming_directives",
     srcs = ["main.ts"],
 )
 
 ts_project(
-    name = "_simple_rule_naming_tests",
+    name = "_simple_rule_naming_directives_tests",
     srcs = ["main.spec.ts"],
-    deps = [":_simple_rule_naming"],
+    deps = [":_simple_rule_naming_directives"],
 )

@@ -10,8 +10,6 @@ import (
 type ImportStatement struct {
 	// The TypeScript path as seen on import statements.
 	Path string `json:"path"`
-	// The line number where the import happened.
-	SourceLineNumber uint32 `json:"sourcelineno"`
 	// The path of the file containing the import
 	SourcePath string `json:"sourcepath"`
 }

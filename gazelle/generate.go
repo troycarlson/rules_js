@@ -135,7 +135,7 @@ func addProjectRule(cfg *TypeScriptConfig, args language.GenerateArgs, targetNam
 			fmt.Println("Parse Error:", fmt.Errorf("%q: %v", filePath, err))
 		} else {
 			for _, imprt := range fileImports {
-				importPath := filepath.Clean(imprt.Path)
+				importPath := filepath.Clean(imprt)
 
 				if !cfg.IsDependencyIgnored(importPath) {
 					// If importing a local data file that can be compiled as ts source
@@ -144,9 +144,8 @@ func addProjectRule(cfg *TypeScriptConfig, args language.GenerateArgs, targetNam
 						sourceDataFiles.Add(importPath)
 					} else {
 						importedFiles.Add(ImportStatement{
-							Path:             importPath,
-							SourcePath:       filePath,
-							SourceLineNumber: imprt.LineNumber,
+							Path:       importPath,
+							SourcePath: filePath,
 						})
 					}
 				}
@@ -167,7 +166,7 @@ func addProjectRule(cfg *TypeScriptConfig, args language.GenerateArgs, targetNam
 }
 
 // Parse the passed file for import statements
-func parseFile(filePath string) ([]FileImportInfo, error) {
+func parseFile(filePath string) ([]string, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err

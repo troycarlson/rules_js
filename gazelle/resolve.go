@@ -125,9 +125,9 @@ func (ts *TypeScript) ResolveModuleDeps(
 				deps.Add(dep)
 				if EXPLAIN_DEPENDENCY == dep {
 					log.Printf("Explaining dependency (%s): "+
-						"in the target %q, the file %q imports %q at line %d, "+
+						"in the target %q, the file %q imports %q, "+
 						"which resolves using the \"gazelle:resolve\" directive.\n",
-						EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber)
+						EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path)
 				}
 			}
 		} else if matches := ix.FindRulesByImportWithConfig(c, imp, languageName); len(matches) > 0 {
@@ -147,15 +147,15 @@ func (ts *TypeScript) ResolveModuleDeps(
 				deps.Add(dep)
 				if EXPLAIN_DEPENDENCY == dep {
 					log.Printf("Explaining dependency (%s): "+
-						"in the target %q, the file %q imports %q at line %d, "+
+						"in the target %q, the file %q imports %q, "+
 						"which resolves from the first-party indexed labels.\n",
-						EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber)
+						EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path)
 				}
 			} else if len(filteredMatches) > 1 {
 				err := fmt.Errorf(
-					"multiple targets (%s) may be imported with %q at line %d in %q "+
+					"multiple targets (%s) may be imported with %q in %q "+
 						"- this must be fixed using the \"gazelle:resolve\" directive",
-					targetListFromResults(filteredMatches), mod.Path, mod.SourceLineNumber, mod.SourcePath)
+					targetListFromResults(filteredMatches), mod.Path, mod.SourcePath)
 				log.Println("ERROR: ", err)
 				hasFatalError = true
 			}
@@ -163,18 +163,18 @@ func (ts *TypeScript) ResolveModuleDeps(
 			deps.Add(pkg)
 			if EXPLAIN_DEPENDENCY == pkg {
 				log.Printf("Explaining dependency (%s): "+
-					"in the target %q, the file %q imports %q at line %d, "+
+					"in the target %q, the file %q imports %q, "+
 					"which resolves from the package declared at %q.\n",
-					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, pkg)
+					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, pkg)
 			}
 
 		} else if pkg, found := cfg.GetNpmPackage(mod.Path); found {
 			deps.Add(pkg)
 			if EXPLAIN_DEPENDENCY == pkg {
 				log.Printf("Explaining dependency (%s): "+
-					"in the target %q, the file %q imports %q at line %d, "+
+					"in the target %q, the file %q imports %q, "+
 					"which resolves from the third-party package %q.\n",
-					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, pkg)
+					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, pkg)
 			}
 
 			// A package might also have a @types package, include it if the source file is type-checked.
@@ -185,9 +185,9 @@ func (ts *TypeScript) ResolveModuleDeps(
 			deps.Add(typePkg)
 			if EXPLAIN_DEPENDENCY == typePkg {
 				log.Printf("Explaining dependency (%s): "+
-					"in the target %q, the file %q imports %q at line %d, "+
+					"in the target %q, the file %q imports %q, "+
 					"which resolves from the third-party @types package %q.\n",
-					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, mod.SourceLineNumber, typePkg)
+					EXPLAIN_DEPENDENCY, from.String(), mod.SourcePath, mod.Path, typePkg)
 			}
 		} else if cfg.EnvironmentType() == EnvironmentNode && isNodeImport(mod.Path) {
 			// If this is a ts file importing a native node library include @types/node if it is available
@@ -196,11 +196,11 @@ func (ts *TypeScript) ResolveModuleDeps(
 			}
 		} else if cfg.ValidateImportStatements() {
 			err := fmt.Errorf(
-				"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+
+				"%[1]q from %[2]q is an invalid dependency: possible solutions:\n"+
 					"\t1. Add it as a dependency in the requirements.txt file.\n"+
 					"\t2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
 					"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the TypeScript file.\n",
-				mod.Path, mod.SourceLineNumber, mod.SourcePath,
+				mod.Path, mod.SourcePath,
 			)
 			log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), err)
 			hasFatalError = true

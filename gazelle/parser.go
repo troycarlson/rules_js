@@ -25,13 +25,6 @@ func NewScanner() *Scanner {
 	return &Scanner{}
 }
 
-type FileImportInfo struct {
-	// The path being imported.
-	Path string `json:"path"`
-	// The source line number of the import.
-	LineNumber uint32 `json:"lineno"`
-}
-
 type Parser struct {
 }
 
@@ -60,8 +53,8 @@ func filenameToLoader(filename string) api.Loader {
 
 // ParseImports returns all the imports from a file
 // after parsing it.
-func (p *Parser) ParseImports(filePath, source string) []FileImportInfo {
-	imports := []FileImportInfo{}
+func (p *Parser) ParseImports(filePath, source string) []string {
+	imports := []string{}
 
 	// Construct an esbuild plugin that pulls out all the imports.
 	plugin := api.Plugin{
@@ -71,10 +64,7 @@ func (p *Parser) ParseImports(filePath, source string) []FileImportInfo {
 			// we'll get access to every import in the file.
 			callback := func(args api.OnResolveArgs) (api.OnResolveResult, error) {
 				// Add the imported string to our list of imports.
-				imports = append(imports, FileImportInfo{
-					Path:       args.Path,
-					LineNumber: 0,
-				})
+				imports = append(imports, args.Path)
 				return api.OnResolveResult{
 					// Mark the import as external so esbuild doesn't complain
 					// about not being able to find the import.

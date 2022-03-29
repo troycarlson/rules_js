@@ -196,12 +196,7 @@ export default ExampleWithKeys;
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			p := NewParser()
-			actualModules := p.ParseImports(tc.filename, tc.ts)
-
-			var actualImports []string = []string{}
-			for _, m := range actualModules {
-				actualImports = append(actualImports, m.Path)
-			}
+			actualImports := p.ParseImports(tc.filename, tc.ts)
 
 			if !reflect.DeepEqual(actualImports, tc.expected) {
 				t.Errorf("Inequality.\nactual:  %#v;\nexpected: %#v\ntypescript code:\n%v", actualImports, tc.expected, tc.ts)

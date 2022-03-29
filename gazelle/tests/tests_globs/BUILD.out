@@ -10,6 +10,6 @@ ts_project(
 
 ts_project(
     name = "tests_globs_tests",
-    srcs = ["tests/main.spec.ts"],
+    srcs = ["tests/maintests.ts"],
     deps = [":tests_globs"],
 )

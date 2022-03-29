@@ -26,9 +26,9 @@ const (
 	// this TypeScript generation is enabled or not. Sub-packages inherit this value.
 	// Can be either "enabled" or "disabled". Defaults to "enabled".
 	TypeScriptGenerationDirective = "ts"
-	// IgnoreDependenciesDirective represents the directive that controls the
+	// IgnoreImportsDirective represents the directive that controls the
 	// ignored dependencies from the generated targets.
-	IgnoreDependenciesDirective = "ts_ignore_dependencies"
+	IgnoreImportsDirective = "ts_ignore_imports"
 	// ValidateImportStatementsDirective represents the directive that controls
 	// whether the TypeScript import statements should be validated.
 	ValidateImportStatementsDirective = "ts_validate_import_statements"
@@ -97,7 +97,7 @@ type TypeScriptConfig struct {
 	environmentType   EnvironmentType
 
 	excludedPatterns         *singlylinkedlist.List
-	ignoreDependencies       map[string]struct{}
+	ignoreDependencies       *treeset.Set
 	validateImportStatements bool
 	libraryNamingConvention  string
 	testsNamingConvention    string
@@ -118,7 +118,7 @@ func NewTypeScriptConfig(
 		npm_package_json:         "package.json",
 		npm_workspace:            "npm",
 		excludedPatterns:         singlylinkedlist.New(),
-		ignoreDependencies:       make(map[string]struct{}),
+		ignoreDependencies:       treeset.NewWithStringComparator(),
 		validateImportStatements: true,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
 		testsNamingConvention:    fmt.Sprintf("%s_tests", packageNameNamingConventionSubstitution),
@@ -145,7 +145,7 @@ func (c *TypeScriptConfig) NewChild() *TypeScriptConfig {
 		npm_package_json:         c.npm_package_json,
 		npm_workspace:            c.npm_workspace,
 		excludedPatterns:         c.excludedPatterns,
-		ignoreDependencies:       make(map[string]struct{}),
+		ignoreDependencies:       treeset.NewWithStringComparator(),
 		validateImportStatements: c.validateImportStatements,
 		libraryNamingConvention:  c.libraryNamingConvention,
 		srcsFileGlob:             c.srcsFileGlob,
@@ -236,28 +236,22 @@ func (c *TypeScriptConfig) GetNpmPackage(imprt string) (string, bool) {
 	return "", false
 }
 
-// AddIgnoreDependency adds a dependency to the list of ignored dependencies for
+// Adds a dependency to the list of ignored dependencies for
 // a given package. Adding an ignored dependency to a package also makes it
 // ignored on a subpackage.
-func (c *TypeScriptConfig) AddIgnoreDependency(dep string) {
-	c.ignoreDependencies[strings.TrimSpace(dep)] = struct{}{}
+func (c *TypeScriptConfig) AddIgnoredImport(imp string) {
+	c.ignoreDependencies.Add(imp)
 }
 
-// IgnoresDependency checks if a dependency is ignored in the given package or
+// Checks if a dependency is ignored in the given package or
 // in one of the parent packages up to the workspace root.
-func (c *TypeScriptConfig) IgnoresDependency(dep string) bool {
-	trimmedDep := strings.TrimSpace(dep)
-
-	if _, ignores := c.ignoreDependencies[trimmedDep]; ignores {
-		return true
-	}
-
-	parent := c.parent
-	for parent != nil {
-		if _, ignores := parent.ignoreDependencies[trimmedDep]; ignores {
+func (c *TypeScriptConfig) IsDependencyIgnored(dep string) bool {
+	config := c
+	for config != nil {
+		if config.ignoreDependencies.Contains(dep) {
 			return true
 		}
-		parent = parent.parent
+		config = config.parent
 	}
 
 	return false

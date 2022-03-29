@@ -88,6 +88,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	var result language.GenerateResult
 
 	addProjectRule(
+		cfg,
 		args,
 		cfg.RenderLibraryName(filepath.Base(args.Dir)),
 		libSourceFiles,
@@ -96,6 +97,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	)
 
 	addProjectRule(
+		cfg,
 		args,
 		cfg.RenderTestsLibraryName(filepath.Base(args.Dir)),
 		testSourceFiles,
@@ -106,7 +108,7 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 	return result
 }
 
-func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles, dataFiles *treeset.Set, result *language.GenerateResult) {
+func addProjectRule(cfg *TypeScriptConfig, args language.GenerateArgs, targetName string, sourceFiles, dataFiles *treeset.Set, result *language.GenerateResult) {
 	// If a build already exists check for name-collisions
 	if args.File != nil {
 		checkCollisionErrors(targetName, args)
@@ -135,16 +137,18 @@ func addProjectRule(args language.GenerateArgs, targetName string, sourceFiles, 
 			for _, imprt := range fileImports {
 				importPath := filepath.Clean(imprt.Path)
 
-				// If importing a local data file that can be compiled as ts source
-				// then add it to the sourceDataFiles to be included in the srcs
-				if dataFiles.Contains(importPath) {
-					sourceDataFiles.Add(importPath)
-				} else {
-					importedFiles.Add(ImportStatement{
-						Path:             importPath,
-						SourcePath:       filePath,
-						SourceLineNumber: imprt.LineNumber,
-					})
+				if !cfg.IsDependencyIgnored(importPath) {
+					// If importing a local data file that can be compiled as ts source
+					// then add it to the sourceDataFiles to be included in the srcs
+					if dataFiles.Contains(importPath) {
+						sourceDataFiles.Add(importPath)
+					} else {
+						importedFiles.Add(ImportStatement{
+							Path:             importPath,
+							SourcePath:       filePath,
+							SourceLineNumber: imprt.LineNumber,
+						})
+					}
 				}
 
 				DEBUG("IMPORT(%q): %q", filePath, importPath)

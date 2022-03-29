@@ -34,7 +34,7 @@ func (ts *Configurer) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
 func (ts *Configurer) KnownDirectives() []string {
 	return []string{
 		TypeScriptGenerationDirective,
-		IgnoreDependenciesDirective,
+		IgnoreImportsDirective,
 		ValidateImportStatementsDirective,
 		EnvironmentDirective,
 		LibraryNamingConvention,
@@ -93,9 +93,9 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 					TypeScriptGenerationDirective, d.Value)
 				log.Fatal(err)
 			}
-		case IgnoreDependenciesDirective:
+		case IgnoreImportsDirective:
 			for _, ignoreDependency := range strings.Split(d.Value, ",") {
-				config.AddIgnoreDependency(ignoreDependency)
+				config.AddIgnoredImport(ignoreDependency)
 			}
 		case ValidateImportStatementsDirective:
 			v, err := strconv.ParseBool(strings.TrimSpace(d.Value))

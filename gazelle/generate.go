@@ -9,7 +9,6 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
-	"github.com/bmatcuk/doublestar"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 )
@@ -188,7 +187,6 @@ func isBazelPackage(dir string) bool {
 func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*treeset.Set, *treeset.Set, error) {
 	sourceFiles := treeset.NewWithStringComparator()
 	dataFiles := treeset.NewWithStringComparator()
-	excludedPatterns := cfg.ExcludedPatterns()
 
 	// Source files
 	for _, f := range args.RegularFiles {
@@ -222,20 +220,10 @@ func collectSourceFiles(cfg *TypeScriptConfig, args language.GenerateArgs) (*tre
 				}
 
 				// Excxluded files. Must be done manually on Subdirs unlike
-				// the BUILD directory which gazell filters automatically.
+				// the BUILD directory which gazelle filters automatically.
 				f, _ := filepath.Rel(args.Dir, filePath)
-				if excludedPatterns != nil {
-					it := excludedPatterns.Iterator()
-					for it.Next() {
-						excludedPattern := it.Value().(string)
-						isExcluded, err := doublestar.Match(excludedPattern, f)
-						if err != nil {
-							return err
-						}
-						if isExcluded {
-							return nil
-						}
-					}
+				if cfg.IsFileExcluded(f) {
+					return nil
 				}
 
 				// Otherwise the file is either source or potentially importable
@@ -269,7 +257,7 @@ func checkCollisionErrors(tsProjectTargetName string, args language.GenerateArgs
 			fqTarget := label.New("", args.Rel, tsProjectTargetName)
 			err := fmt.Errorf("failed to generate target %q of kind %q: "+
 				"a target of kind %q with the same name already exists. "+
-				"Use the '// gazelle:%s' directive to change the naming convention.",
+				"Use the '# gazelle:%s' directive to change the naming convention.",
 				fqTarget.String(), tsProjectKind, t.Kind(), LibraryNamingConvention)
 			collisionErrors.Add(err)
 		}

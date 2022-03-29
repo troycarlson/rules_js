@@ -163,8 +163,19 @@ func (c *TypeScriptConfig) AddExcludedPattern(pattern string) {
 }
 
 // ExcludedPatterns returns the excluded patterns list.
-func (c *TypeScriptConfig) ExcludedPatterns() *singlylinkedlist.List {
-	return c.excludedPatterns
+func (c *TypeScriptConfig) IsFileExcluded(filePath string) bool {
+	excludeIt := c.excludedPatterns.Iterator()
+	for excludeIt.Next() {
+		isExcluded, err := doublestar.Match(excludeIt.Value().(string), filePath)
+		if err != nil {
+			fmt.Println("ERROR: ", fmt.Errorf("exclusion glob error %e", err))
+			return false
+		}
+		if isExcluded {
+			return true
+		}
+	}
+	return false
 }
 
 // SetGenerationEnabled sets whether the extension is enabled or not.

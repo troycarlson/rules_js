@@ -123,7 +123,7 @@ func NewTypeScriptConfig(
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
 		testsNamingConvention:    fmt.Sprintf("%s_tests", packageNameNamingConventionSubstitution),
 		srcsFileGlob:             fmt.Sprintf("**/*.{%s}", strings.Join(sourceFileExtensionsArray, ",")),
-		testsFileGlob:            fmt.Sprintf("**/*.spec.{%s}", strings.Join(sourceFileExtensionsArray, ",")),
+		testsFileGlob:            fmt.Sprintf("**/*.{spec,test}.{%s}", strings.Join(sourceFileExtensionsArray, ",")),
 
 		_npm_packages: nil,
 	}

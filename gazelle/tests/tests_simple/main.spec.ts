@@ -1,3 +1,3 @@
 import { ANSWER } from "./main";
 
-console.log("TEST: ", ANSWER === 42);
+console.log("SPEC: ", ANSWER === 42);

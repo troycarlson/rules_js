@@ -1,29 +1,12 @@
 package gazelle
 
 import (
-	"io/ioutil"
 	"log"
 
 	"path/filepath"
 
 	"github.com/evanw/esbuild/pkg/api"
 )
-
-// Scanner reads a file into a string.
-type Scanner struct {
-}
-
-// Scan reads a file named name in directory dir into a string.
-// The contents of the file are stored in fileInfo.Content.
-func (s *Scanner) Scan(dir string, name string) (error, string) {
-	fpath := filepath.Join(dir, name)
-	content, err := ioutil.ReadFile(fpath)
-	return err, string(content)
-}
-
-func NewScanner() *Scanner {
-	return &Scanner{}
-}
 
 type Parser struct {
 }

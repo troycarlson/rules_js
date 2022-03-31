@@ -77,13 +77,9 @@ func (ts *TypeScript) Resolve(
 	modulesRaw interface{},
 	from label.Label,
 ) {
-	deps := treeset.NewWithStringComparator()
+	deps := ts.ResolveModuleDeps(c, ix, modulesRaw.(*treeset.Set), from)
 
-	if modulesRaw != nil {
-		ts.ResolveModuleDeps(c, ix, modulesRaw.(*treeset.Set), from, deps)
-	}
-
-	DEBUG("RESOLVED(%s): %s", from.Name, deps.Values())
+	DEBUG("RESOLVED(%s): %s => %s", from.Name, modulesRaw.(*treeset.Set).Values(), deps.Values())
 
 	if !deps.Empty() {
 		r.SetAttr("deps", convertDependencySetToExpr(deps))
@@ -95,9 +91,8 @@ func (ts *TypeScript) ResolveModuleDeps(
 	ix *resolve.RuleIndex,
 	modules *treeset.Set,
 	from label.Label,
-	deps *treeset.Set,
-) {
-	DEBUG("ResolveModuleDeps(%s): modules(%s) deps(%s)", from.Name, modules.Values(), deps.Values())
+) *treeset.Set {
+	deps := treeset.NewWithStringComparator()
 
 	cfgs := c.Exts[languageName].(Configs)
 	cfg := cfgs[from.Pkg]
@@ -110,8 +105,6 @@ func (ts *TypeScript) ResolveModuleDeps(
 			Lang: languageName,
 			Imp:  mod.Path,
 		}
-
-		// fmt.Printf("mod: %s, %s, %s => %s\n", from.Pkg, mod.SourcePath, mod.Path, imp.Imp)
 
 		DEBUG("RESOLVE: %q from %q", imp.Imp, from.Name)
 
@@ -211,6 +204,8 @@ func (ts *TypeScript) ResolveModuleDeps(
 	if hasFatalError {
 		os.Exit(1)
 	}
+
+	return deps
 }
 
 // targetListFromResults returns a string with the human-readable list of

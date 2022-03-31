@@ -78,10 +78,12 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 	}
 
 	for _, d := range f.Directives {
+		value := strings.TrimSpace(d.Value)
+
 		switch d.Key {
 		case "exclude":
 			// We record the exclude directive since we do manual tree traversal of subdirs.
-			config.AddExcludedPattern(strings.TrimSpace(d.Value))
+			config.AddExcludedPattern(value)
 		case TypeScriptGenerationDirective:
 			switch d.Value {
 			case "enabled":
@@ -95,28 +97,28 @@ func (ts *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			}
 		case IgnoreImportsDirective:
 			for _, ignoreDependency := range strings.Split(d.Value, ",") {
-				config.AddIgnoredImport(ignoreDependency)
+				config.AddIgnoredImport(strings.TrimSpace(ignoreDependency))
 			}
 		case ValidateImportStatementsDirective:
-			v, err := strconv.ParseBool(strings.TrimSpace(d.Value))
+			v, err := strconv.ParseBool(value)
 			if err != nil {
 				log.Fatal(err)
 			}
 			config.SetValidateImportStatements(v)
 		case EnvironmentDirective:
-			config.SetEnvironmentType(EnvironmentType(strings.TrimSpace(d.Value)))
+			config.SetEnvironmentType(EnvironmentType(value))
 		case LibraryNamingConvention:
-			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
+			config.SetLibraryNamingConvention(value)
 		case TestsNamingConvention:
-			config.SetTestsNamingLibraryConvention(strings.TrimSpace(d.Value))
+			config.SetTestsNamingLibraryConvention(value)
 		case SourcesFileGlob:
-			config.SetSourceFileGlob(strings.TrimSpace(d.Value))
+			config.SetSourceFileGlob(value)
 		case TestsFileGlob:
-			config.SetTestFileGlob(strings.TrimSpace(d.Value))
+			config.SetTestFileGlob(value)
 		case NpmWorkspace:
-			config.SetNpmWorkspace(strings.TrimSpace(d.Value))
+			config.SetNpmWorkspace(value)
 		case NpmPackageJson:
-			config.SetNpmPackageJSON(strings.TrimSpace(d.Value))
+			config.SetNpmPackageJSON(value)
 		}
 	}
 }

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
-	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 )
 
@@ -96,7 +95,7 @@ type TypeScriptConfig struct {
 	npm_workspace     string
 	environmentType   EnvironmentType
 
-	excludedPatterns         *singlylinkedlist.List
+	excludedPatterns         *treeset.Set
 	ignoreDependencies       *treeset.Set
 	validateImportStatements bool
 	libraryNamingConvention  string
@@ -117,7 +116,7 @@ func NewTypeScriptConfig(
 		environmentType:          EnvironmentOther,
 		npm_package_json:         "package.json",
 		npm_workspace:            "npm",
-		excludedPatterns:         singlylinkedlist.New(),
+		excludedPatterns:         treeset.NewWithStringComparator(),
 		ignoreDependencies:       treeset.NewWithStringComparator(),
 		validateImportStatements: true,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,

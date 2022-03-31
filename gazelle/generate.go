@@ -109,14 +109,14 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 }
 
 func addProjectRule(cfg *TypeScriptConfig, args language.GenerateArgs, targetName string, sourceFiles, dataFiles *treeset.Set, result *language.GenerateResult) {
-	// If a build already exists check for name-collisions
-	if args.File != nil {
-		checkCollisionErrors(targetName, args)
-	}
-
 	// Generate nothing if there are no source files
 	if sourceFiles.Empty() {
 		return
+	}
+
+	// If a build already exists check for name-collisions with the rule being generated
+	if args.File != nil {
+		checkCollisionErrors(targetName, args)
 	}
 
 	// Data files imported by sourceFiles

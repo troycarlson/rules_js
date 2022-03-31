@@ -51,7 +51,6 @@ go_library(
     go_test(
         name = "%s_test" % (t.replace("_test.go", "")),
         srcs = [t],
-        deps = [],
         embed = [":gazelle"],
     )
     for t in glob(["*_test.go"])
@@ -61,11 +60,4 @@ gazelle_binary(
     name = "gazelle_js_binary",
     languages = ["//gazelle"],
     visibility = ["//visibility:public"],
-)
-
-bzl_library(
-    name = "deps",
-    srcs = ["deps.bzl"],
-    visibility = ["//visibility:public"],
-    deps = ["@bazel_gazelle//:deps"],
 )

@@ -111,6 +111,14 @@ func (ts *TypeScript) GenerateRules(args language.GenerateArgs) language.Generat
 func addProjectRule(cfg *TypeScriptConfig, args language.GenerateArgs, targetName string, sourceFiles, dataFiles *treeset.Set, result *language.GenerateResult) {
 	// Generate nothing if there are no source files
 	if sourceFiles.Empty() {
+		if args.File != nil {
+			for _, r := range args.File.Rules {
+				if r.Name() == targetName && r.Kind() == tsProjectKind {
+					result.Empty = append(result.Empty, rule.NewRule(r.Kind(), r.Name()))
+				}
+			}
+		}
+
 		return
 	}
 

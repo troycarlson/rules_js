@@ -32,10 +32,11 @@ def rules_js_internal_deps():
     maybe(
         http_archive,
         name = "bazel_gazelle",
-        sha256 = "5982e5463f171da99e3bdaeff8c0f48283a7a5f396ec5282910b9e8a49c0dd7e",
+        sha256 = "31453a0f1200bc2cd6ecba2314e1942bac7f7da99729eb4f1dcdbd9791e3f989",
+        strip_prefix = "bazel-gazelle-b458bec82e613d1bac59afbb5b8b3d5846771b01",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz",
-            "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz",
+            # "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz",
+            "https://github.com/bazelbuild/bazel-gazelle/archive/b458bec82e613d1bac59afbb5b8b3d5846771b01.tar.gz",
         ],
     )
 

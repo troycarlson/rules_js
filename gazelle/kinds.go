@@ -17,7 +17,7 @@ func (*TypeScript) Kinds() map[string]rule.KindInfo {
 var tsKinds = map[string]rule.KindInfo{
 	// TODO: what should we keep for ts?
 	tsProjectKind: {
-		MatchAny: true,
+		MatchAny: false,
 		NonEmptyAttrs: map[string]bool{
 			"deps": true,
 			"srcs": true,

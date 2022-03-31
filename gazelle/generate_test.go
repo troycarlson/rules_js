@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestResolve(t *testing.T) {
+func TestGenerate(t *testing.T) {
 	for _, tc := range []struct {
 		pkg, from, impt string
 		expected        string

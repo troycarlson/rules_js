@@ -108,8 +108,10 @@ func (ts *TypeScript) ResolveModuleDeps(
 		mod := it.Value().(ImportStatement)
 		imp := resolve.ImportSpec{
 			Lang: languageName,
-			Imp:  toWorkspaceImportPath(from.Pkg, mod.SourcePath, mod.Path),
+			Imp:  mod.Path,
 		}
+
+		// fmt.Printf("mod: %s, %s, %s => %s\n", from.Pkg, mod.SourcePath, mod.Path, imp.Imp)
 
 		DEBUG("RESOLVE: %q from %q", imp.Imp, from.Name)
 
@@ -209,25 +211,6 @@ func (ts *TypeScript) ResolveModuleDeps(
 	if hasFatalError {
 		os.Exit(1)
 	}
-}
-
-// Normalize the given import statement from a relative path
-// to a path relative to the workspace.
-func toWorkspaceImportPath(pkg, src, impt string) string {
-	// Convert relative to workspace-relative
-	if impt[0] == '.' {
-		impt = filepath.Join(pkg, filepath.Dir(src), impt)
-	}
-
-	// Clean any extra . / .. etc
-	impt = filepath.Clean(impt)
-
-	// Trim supported TS extensions
-	if isSourceFile(impt) {
-		impt = strings.TrimSuffix(impt, filepath.Ext(impt))
-	}
-
-	return impt
 }
 
 // targetListFromResults returns a string with the human-readable list of

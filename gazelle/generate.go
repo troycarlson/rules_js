@@ -134,10 +134,10 @@ func addProjectRule(cfg *TypeScriptConfig, args language.GenerateArgs, targetNam
 		if err != nil {
 			fmt.Println("Parse Error:", fmt.Errorf("%q: %v", filePath, err))
 		} else {
-			for _, imprt := range fileImports {
-				importPath := filepath.Clean(imprt)
-
+			for _, importPath := range fileImports {
 				if !cfg.IsDependencyIgnored(importPath) {
+					importPath = toWorkspaceImportPath(args.Rel, filePath, importPath)
+
 					// If importing a local data file that can be compiled as ts source
 					// then add it to the sourceDataFiles to be included in the srcs
 					if dataFiles.Contains(importPath) {
@@ -295,6 +295,18 @@ func stripImportExtensions(f string) string {
 	}
 
 	return f[:len(f)-len(filepath.Ext(f))]
+}
+
+// Normalize the given import statement from a relative path
+// to a path relative to the workspace.
+func toWorkspaceImportPath(pkg, src, impt string) string {
+	// Convert relative to workspace-relative
+	if impt[0] == '.' {
+		impt = filepath.Join(pkg, filepath.Dir(src), impt)
+	}
+
+	// Clean any extra . / .. etc
+	return filepath.Clean(impt)
 }
 
 // If the file is an index it can be imported with the directory name

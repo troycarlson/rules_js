@@ -1,7 +1,0 @@
-load("//js:nodejs_binary.bzl", "nodejs_binary")
-
-nodejs_binary(
-    name = "ts_api",
-    data = ["@npm_typescript-4.6.3"],
-    entry_point = "main.js",
-)

@@ -4,6 +4,7 @@ load(
     "@bazel_gazelle//:deps.bzl",
     _go_repository = "go_repository",
 )
+load("//js:npm_import.bzl", "npm_import")
 
 def go_repository(name, **kwargs):
     if name not in native.existing_rules():
@@ -11,6 +12,12 @@ def go_repository(name, **kwargs):
 
 def gazelle_deps():
     "Fetch go dependencies"
+    npm_import(
+        integrity = "sha512-yNIatDa5iaofVozS/uQJEl3JRWLKKGJKh6Yaiv0GLGSuhpFJe7P3SbHZ8/yjAHRQwKRoA6YZqlfjXWmVzoVSMw==",
+        package = "typescript",
+        version = "4.6.3",
+        deps = [],
+    )
     go_repository(
         name = "co_honnef_go_tools",
         importpath = "honnef.co/go/tools",

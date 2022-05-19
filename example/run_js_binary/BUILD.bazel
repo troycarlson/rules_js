@@ -11,8 +11,8 @@ run_js_binary(
     srcs = ["in.txt"],
     outs = ["out.txt"],
     args = [
-        "$(location in.txt)",
-        "$(location out.txt)",
+        "../../../$(location in.txt)",
+        "../../../$(location out.txt)",
     ],
     tool = ":copy",
 )

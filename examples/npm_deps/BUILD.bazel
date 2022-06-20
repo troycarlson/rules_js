@@ -67,6 +67,7 @@ js_test(
         ":node_modules/rollup",
     ],
     entry_point = "peer_test.js",
+    log_level = "debug",
 )
 
 #######################################

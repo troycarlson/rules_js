@@ -2054,7 +2054,7 @@ packages:
     dev: true
 
   /optimist/0.6.0:
-    resolution: {integrity: sha512-ubrZPyOU0AHpXkmwqfWolap+eHMwQ484AKivkf0ZGyysd6fUJZl7ow9iu5UNV1vCZv46HQ7EM83IC3NGJ820hg==}
+    resolution: {integrity: sha1-aUJIJvNAX3nxQub8PZrljU27kgA=}
     dependencies:
       minimist: 0.0.10
       wordwrap: 0.0.3
